@@ -43,6 +43,8 @@ A private tap expires after seven days. When friends tap each other within that 
 
 [Set up background match notifications](docs/MATCH_NOTIFICATIONS.md)
 
+[Read how circle privacy and account controls work](docs/PRIVACY_CONTROLS.md).
+
 ## Product principles
 
 - One-sided taps stay private.
