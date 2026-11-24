@@ -2,17 +2,21 @@ const tokenPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 export function inviteToken(input: string): string | null {
   const value = input.trim();
-  if (tokenPattern.test(value)) return value;
+  if (tokenPattern.test(value)) return value.toLowerCase();
   try {
-    const match = new URL(value).pathname.match(/^\/invite\/([^/]+)\/?$/);
-    return match && tokenPattern.test(match[1]) ? match[1] : null;
+    const url = new URL(value);
+    const path = url.protocol === 'tether:' && url.hostname === 'invite'
+      ? '/invite' + url.pathname
+      : url.pathname;
+    const match = path.match(/^\/invite\/([^/]+)\/?$/);
+    return match && tokenPattern.test(match[1]) ? match[1].toLowerCase() : null;
   } catch {
     return null;
   }
 }
 
 export function inviteLink(token: string): string | null {
-  const base = process.env.EXPO_PUBLIC_INVITE_BASE_URL;
+  const base = process.env.EXPO_PUBLIC_INVITE_BASE_URL || globalThis.location?.origin;
   if (!base) return null;
   try {
     const url = new URL('/invite/' + token, base);
@@ -20,4 +24,8 @@ export function inviteLink(token: string): string | null {
   } catch {
     return null;
   }
+}
+
+export function inviteAppLink(token: string): `tether://invite/${string}` {
+  return `tether://invite/${token}`;
 }

@@ -1,12 +1,12 @@
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { Text } from 'react-native';
+import { Link, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Platform, Text } from 'react-native';
 
 import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Problem } from '@/components/feature-ui';
 import { acceptInvite, errorMessage, previewInvite, profileName } from '@/features/api';
-import { inviteToken } from '@/features/invites';
+import { inviteAppLink, inviteToken } from '@/features/invites';
 
 export default function InviteScreen() {
   const params = useLocalSearchParams<{ token: string }>();
@@ -37,7 +37,7 @@ function Invitation({ token }: { token: string | null }) {
     return () => { active = false; };
   }, [token]);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (!userId || !token) return;
     let active = true;
     void profileName(userId).then((name) => {
@@ -46,7 +46,7 @@ function Invitation({ token }: { token: string | null }) {
       if (active) setError('Could not load your display name. Reopen the link to try again.');
     });
     return () => { active = false; };
-  }, [userId, token]);
+  }, [userId, token]));
 
   async function accept() {
     if (!token || !named || accepting.current) return;
@@ -73,6 +73,11 @@ function Invitation({ token }: { token: string | null }) {
       {!token || inviter === null ? <Text style={[accountStyles.copy, { color: colors.secondary }]}>This invitation is invalid, expired, or already used.</Text> : null}
       {inviter && token && <>
         <Text style={[accountStyles.copy, { color: colors.secondary }]}>Accept to add each other to your private circles.</Text>
+        {Platform.OS === 'web' && (
+          <Link href={inviteAppLink(token)} style={[accountStyles.link, { color: colors.secondary }]}>
+            Open in the Tether app
+          </Link>
+        )}
         {session ? (
           named === false ? (
             <>
