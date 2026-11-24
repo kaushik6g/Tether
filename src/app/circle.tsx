@@ -103,6 +103,7 @@ export default function CircleScreen() {
       ))}
       {error ? <Problem message={error} /> : null}
       {error && friends === null && <Action title="Try again" onPress={() => retry.current()} />}
+      <Link href="/privacy" style={[accountStyles.link, { color: colors.text }]}>Privacy</Link>
       <Action title={signingOut ? 'Signing out…' : 'Sign out'} disabled={signingOut} onPress={signOut} />
     </AccountPage>
   );
