@@ -7,7 +7,7 @@ import { AccountPage, accountStyles, useAccountColors } from '@/components/accou
 import { ChatPlan } from '@/components/chat-plan';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { closeMatch, listMatches, listMessages, sendMessage } from '@/features/api';
-import { listMatchPlans } from '@/features/plans';
+import { listMatchPlans, listPlanHistory } from '@/features/plans';
 import { useMatchFeed } from '@/features/use-match-feed';
 
 export default function ChatScreen() {
@@ -27,8 +27,8 @@ function Chat({ id }: { id: string }) {
   const [problem, setProblem] = useState('');
 
   const load = useCallback(async () => {
-    const [matches, messages, plans] = await Promise.all([listMatches(), listMessages(id), listMatchPlans(id)]);
-    return { match: matches.find((entry) => entry.id === id), messages, plans };
+    const [matches, messages, plans, history] = await Promise.all([listMatches(), listMessages(id), listMatchPlans(id), listPlanHistory(id)]);
+    return { match: matches.find((entry) => entry.id === id), messages, plans, history };
   }, [id]);
   const { data, error, reload } = useMatchFeed('catch-up-' + id, id, load, true);
 
@@ -62,7 +62,7 @@ function Chat({ id }: { id: string }) {
       {!data && !error && <Text style={{ color: colors.secondary }}>Opening conversation…</Text>}
       {data && !match && <Problem message="This conversation is unavailable." />}
       {match && <>
-        <ChatPlan matchId={id} plans={data.plans} userId={userId} closed={!!match.closed_at} reload={reload} />
+        <ChatPlan matchId={id} plans={data.plans} history={data.history} userId={userId} closed={!!match.closed_at} reload={reload} />
         {data.messages.map((message) => {
           const sender = !message.sender_id ? 'Tether' : message.sender_id === userId ? 'You' : match.display_name;
           return (

@@ -9,6 +9,10 @@ import { errorMessage } from '@/features/api';
 import { formatPlanTime } from '@/features/plan-time';
 import { acceptPlan, cancelPlan, resolveProposal, type CatchupPlan } from '@/features/plans';
 
+const outcomes: Partial<Record<CatchupPlan['status'], string>> = {
+  declined: 'Declined', withdrawn: 'Withdrawn', replaced: 'Replaced', closed: 'Closed with chat',
+};
+
 export function PlanDetails({ plan }: { plan: CatchupPlan }) {
   const colors = useAccountColors();
   return (
@@ -21,9 +25,10 @@ export function PlanDetails({ plan }: { plan: CatchupPlan }) {
   );
 }
 
-export function ChatPlan({ matchId, plans, userId, closed, reload }: {
+export function ChatPlan({ matchId, plans, history, userId, closed, reload }: {
   matchId: string;
   plans: CatchupPlan[];
+  history: CatchupPlan[];
   userId: string | undefined;
   closed: boolean;
   reload: () => void;
@@ -32,6 +37,7 @@ export function ChatPlan({ matchId, plans, userId, closed, reload }: {
   const updating = useRef(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
+  const [historyVisible, setHistoryVisible] = useState(false);
   const [confirmCancellation, setConfirmCancellation] = useState(false);
   const plan = plans.find((entry) => entry.status === 'confirmed' || entry.status === 'cancelled') ??
     plans.find((entry) => entry.status === 'pending');
@@ -57,7 +63,7 @@ export function ChatPlan({ matchId, plans, userId, closed, reload }: {
     }
   }
 
-  if (closed && !plan) return null;
+  if (closed && !plan && !history.length) return null;
   const proposed = plan?.status === 'pending' && !closed;
   const expired = !!plan && new Date(plan.starts_at).getTime() <= Date.now();
 
@@ -94,6 +100,18 @@ export function ChatPlan({ matchId, plans, userId, closed, reload }: {
         style={[accountStyles.link, { color: colors.text }]}>
         {proposed ? 'Suggest another plan' : 'Suggest a plan'}
       </Link>}
+      {history.length > 0 && (
+        <>
+          <Action title={historyVisible ? 'Hide previous proposals' : 'Show previous proposals'}
+            onPress={() => setHistoryVisible(!historyVisible)} />
+          {historyVisible && history.map((entry) => (
+            <View key={entry.id} style={[styles.historyItem, { borderColor: colors.border }]}>
+              <Text style={[styles.title, { color: colors.text }]}>{outcomes[entry.status]}</Text>
+              <PlanDetails plan={entry} />
+            </View>
+          ))}
+        </>
+      )}
       {problem ? <Problem message={problem} /> : null}
     </View>
   );
@@ -103,4 +121,5 @@ const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 12, padding: 14, gap: 10 },
   title: { fontSize: 20, fontWeight: '700' },
   details: { gap: 6 },
+  historyItem: { borderTopWidth: 1, gap: 6, paddingTop: 8 },
 });

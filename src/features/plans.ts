@@ -28,6 +28,14 @@ export async function listMatchPlans(matchId: string): Promise<CatchupPlan[]> {
   return data as CatchupPlan[];
 }
 
+export async function listPlanHistory(matchId: string): Promise<CatchupPlan[]> {
+  const { data, error } = await client().from('catchup_plans').select(columns)
+    .eq('match_id', matchId).in('status', ['declined', 'withdrawn', 'replaced', 'closed'])
+    .order('decided_at', { ascending: false }).order('id', { ascending: false }).limit(10);
+  if (error) throw error;
+  return data as CatchupPlan[];
+}
+
 export async function listUpcomingPlans(): Promise<CatchupPlan[]> {
   const { data, error } = await client().from('catchup_plans').select(columns)
     .eq('status', 'confirmed').gt('starts_at', new Date().toISOString())
