@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { accountStyles, useAccountColors } from '@/components/account-ui';
+import { PlanCalendarAction } from '@/components/plan-calendar-action';
 import { Action, Problem } from '@/components/feature-ui';
 import { errorMessage } from '@/features/api';
 import { formatPlanTime } from '@/features/plan-time';
@@ -64,6 +65,7 @@ export function ChatPlan({ matchId, plans, userId, closed, reload }: {
             ? 'Cancelled plan' : own ? 'Your proposal' : 'Suggested plan'}
         </Text>
         <PlanDetails plan={plan} />
+        {plan.status === 'confirmed' && !expired && <PlanCalendarAction plan={plan} />}
       </>}
       {proposed && expired && <Text style={{ color: colors.secondary }}>This proposed time has passed.</Text>}
       {proposed && own && <Action title="Withdraw proposal" disabled={busy} onPress={() => respond('withdrawn')} />}

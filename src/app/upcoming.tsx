@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { PlanDetails } from '@/components/chat-plan';
+import { PlanCalendarAction } from '@/components/plan-calendar-action';
 import { Action, Problem } from '@/components/feature-ui';
 import { listMatches } from '@/features/api';
 import { listUpcomingPlans } from '@/features/plans';
@@ -32,6 +33,7 @@ export default function UpcomingScreen() {
           <Link href={{ pathname: '/chat/[id]', params: { id: plan.match_id } }}
             style={[accountStyles.link, { color: colors.text }]}>{name}</Link>
           <PlanDetails plan={plan} />
+          <PlanCalendarAction plan={plan} />
         </View>
       ))}
       {error ? <Problem message="Could not refresh your upcoming plans." /> : null}
