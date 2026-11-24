@@ -5,12 +5,12 @@ export type Friend = { friend_id: string; display_name: string };
 export type Match = { id: string; display_name: string; created_at: string; closed_at: string | null; closed_reason: 'connection_ended' | null };
 export type Message = { id: string; sender_id: string | null; body: string; created_at: string };
 
-function client() {
+export function client() {
   if (!supabase) throw new Error('Tether is unavailable.');
   return supabase;
 }
 
-async function rpc<T>(name: string, args?: Record<string, string>): Promise<T> {
+export async function rpc<T>(name: string, args?: Record<string, string | number | null>): Promise<T> {
   const { data, error } = await client().rpc(name, args);
   if (error) throw error;
   return data as T;
