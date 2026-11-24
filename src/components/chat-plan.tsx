@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
-import { useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 
 import { accountStyles, useAccountColors } from '@/components/account-ui';
 import { PlanCalendarAction } from '@/components/plan-calendar-action';
@@ -43,6 +43,20 @@ export function ChatPlan({ matchId, plans, history, userId, closed, reload }: {
     plans.find((entry) => entry.status === 'pending');
   const own = plan?.proposer_id === userId;
 
+  const [now, setNow] = useState(Date.now);
+  const startsAt = plan ? new Date(plan.starts_at).getTime() : undefined;
+
+  useEffect(() => {
+    if (!startsAt) return;
+    const refreshClock = () => setNow(Date.now());
+    const subscription = AppState.addEventListener('change', refreshClock);
+    const timer = setInterval(refreshClock, 15_000);
+    return () => {
+      subscription.remove();
+      clearInterval(timer);
+    };
+  }, [startsAt]);
+
   async function respond(decision: 'accept' | 'declined' | 'withdrawn' | 'cancel') {
     if (!plan || !userId || updating.current || (decision !== 'cancel' && closed)) return;
     updating.current = true;
@@ -65,7 +79,7 @@ export function ChatPlan({ matchId, plans, history, userId, closed, reload }: {
 
   if (closed && !plan && !history.length) return null;
   const proposed = plan?.status === 'pending' && !closed;
-  const expired = !!plan && new Date(plan.starts_at).getTime() <= Date.now();
+  const expired = startsAt !== undefined && startsAt <= now;
 
   return (
     <View style={[styles.card, { borderColor: colors.border }]}>
