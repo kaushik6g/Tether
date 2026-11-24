@@ -1,7 +1,10 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
+
+let nextSubscription = 0;
 
 export function useMatchFeed<T>(channelId: string, matchId: string | undefined, load: () => Promise<T>, observePlans = false) {
   const [data, setData] = useState<T>();
@@ -11,21 +14,42 @@ export function useMatchFeed<T>(channelId: string, matchId: string | undefined, 
   useFocusEffect(useCallback(() => {
     const client = supabase;
     let active = true;
-    let sequence = 0;
+    let running = false;
+    let pending = false;
+
     function refreshNow() {
-      const current = ++sequence;
+      if (!active) return;
+      if (running) {
+        pending = true;
+        return;
+      }
+
+      running = true;
       void load().then((value) => {
-        if (active && sequence === current) { setData(value); setError(false); }
+        if (active) { setData(value); setError(false); }
       }).catch(() => {
-        if (active && sequence === current) setError(true);
+        if (active) setError(true);
+      }).finally(() => {
+        running = false;
+        if (pending) {
+          pending = false;
+          refreshNow();
+        }
       });
     }
 
     refresh.current = refreshNow;
     refreshNow();
-    const channel = client?.channel(channelId).on('postgres_changes', {
+    const foreground = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refreshNow();
+    });
+
+    // Focus can return while the previous channel is still leaving.
+    const topic = channelId + ':' + ++nextSubscription;
+    const channel = client?.channel(topic).on('postgres_changes', {
       event: '*', schema: 'public', table: 'matches', ...(matchId && { filter: 'id=eq.' + matchId }),
     }, refreshNow);
+
     if (matchId) {
       channel?.on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'messages', filter: 'match_id=eq.' + matchId,
@@ -43,6 +67,7 @@ export function useMatchFeed<T>(channelId: string, matchId: string | undefined, 
     return () => {
       active = false;
       refresh.current = () => {};
+      foreground.remove();
       if (client && channel) void client.removeChannel(channel);
     };
   }, [channelId, matchId, load, observePlans]));
