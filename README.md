@@ -36,3 +36,5 @@ This repository contains the Expo and React Native TypeScript starter. Product s
 ## Git workflow
 
 Make commits for complete, understandable changes. Avoid empty commits or splitting one trivial edit into several commits.
+
+Read the [original product concept](docs/PRODUCT_CONCEPT.md).
