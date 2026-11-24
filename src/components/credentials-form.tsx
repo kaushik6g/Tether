@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
@@ -9,7 +9,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const colors = useAccountColors();
   const create = mode === 'sign-up';
   const title = create ? 'Create account' : 'Sign in';
-  const passwordInput = useRef<TextInput>(null);
+  const passwordInput = useRef<ComponentRef<typeof TextInput>>(null);
   const requestInFlight = useRef(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

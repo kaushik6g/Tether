@@ -1,6 +1,6 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
-import { AppState, Platform, type AppStateStatus } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
@@ -22,7 +22,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       setReady(true);
     });
 
-    function refreshWhileActive(state: AppStateStatus) {
+    function refreshWhileActive(state: string | null | undefined) {
       if (state === 'active') void auth?.startAutoRefresh();
       else void auth?.stopAutoRefresh();
     }
