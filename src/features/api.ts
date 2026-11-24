@@ -27,6 +27,8 @@ export async function saveProfile(userId: string, name: string) {
   if (error) throw error;
 }
 
+export function removeFriend(friend: string) { return rpc<void>('remove_circle_friend', { friend }); }
+export function blockFriend(friend: string) { return rpc<void>('block_circle_friend', { friend }); }
 export function listCircle() { return rpc<Friend[]>('list_circle'); }
 export function listActiveInvites() { return rpc<ActiveInvite[]>('list_active_circle_invites'); }
 export function revokeInvite(token: string) { return rpc<boolean>('revoke_circle_invite', { invite_token: token }); }

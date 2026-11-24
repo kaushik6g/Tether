@@ -38,6 +38,7 @@ function AccountRoutes() {
         </Stack.Protected>
         <Stack.Protected guard={!!session}>
           <Stack.Screen name="circle" />
+          <Stack.Screen name="friend/[id]" />
           <Stack.Screen name="notifications" />
           <Stack.Screen name="profile" />
           <Stack.Screen name="invitations" />

@@ -92,7 +92,9 @@ export default function CircleScreen() {
       {friends?.length === 0 && <Text style={[accountStyles.copy, { color: colors.secondary }]}>Invite a friend to start your circle.</Text>}
       {friends?.map((friend) => (
         <View key={friend.friend_id} style={[styles.row, { borderColor: colors.border }]}>
-          <Text style={[styles.name, { color: colors.text }]}>{friend.display_name}</Text>
+          <Link href={{ pathname: '/friend/[id]', params: { id: friend.friend_id } }}
+            accessibilityLabel={'Manage ' + friend.display_name}
+            style={[styles.name, { color: colors.text }]}>{friend.display_name}</Link>
           <Pressable accessibilityRole="button" accessibilityLabel={'Catch up with ' + friend.display_name}
             onPress={() => void tap(friend.friend_id)} style={styles.tap}>
             <Text style={[styles.heart, { color: colors.text }]}>♡</Text>
