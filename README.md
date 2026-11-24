@@ -22,7 +22,14 @@ npm run typecheck
 
 ## Current stage
 
-The app opens to a Tether welcome screen. Accounts, friend circles, and Supabase integration are planned for later phases.
+Tether has a welcome screen, email and password accounts, and a signed-in circle screen. Adding friends and private taps are planned for later phases.
+
+## Supabase Auth
+
+1. Copy `.env.example` to `.env.local`.
+2. In the Tether Supabase dashboard, open **Connect** and enter the project URL and publishable key in the two environment variables.
+3. Enable the Email provider in Supabase Auth. If email confirmation is enabled, use a reachable site URL for the signup confirmation redirect. After confirming, reopen Tether and sign in with the same email and password.
+4. Restart Expo after changing the environment variables.
 
 ## Product principles
 
