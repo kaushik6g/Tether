@@ -7,7 +7,7 @@ import { PlanCalendarAction } from '@/components/plan-calendar-action';
 import { Action, Problem } from '@/components/feature-ui';
 import { errorMessage } from '@/features/api';
 import { formatPlanTime } from '@/features/plan-time';
-import { acceptPlan, resolveProposal, type CatchupPlan } from '@/features/plans';
+import { acceptPlan, cancelPlan, resolveProposal, type CatchupPlan } from '@/features/plans';
 
 export function PlanDetails({ plan }: { plan: CatchupPlan }) {
   const colors = useAccountColors();
@@ -32,17 +32,21 @@ export function ChatPlan({ matchId, plans, userId, closed, reload }: {
   const updating = useRef(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
+  const [confirmCancellation, setConfirmCancellation] = useState(false);
   const plan = plans.find((entry) => entry.status === 'confirmed' || entry.status === 'cancelled') ??
     plans.find((entry) => entry.status === 'pending');
   const own = plan?.proposer_id === userId;
 
-  async function respond(decision: 'accept' | 'declined' | 'withdrawn') {
-    if (!plan || closed || !userId || updating.current) return;
+  async function respond(decision: 'accept' | 'declined' | 'withdrawn' | 'cancel') {
+    if (!plan || !userId || updating.current || (decision !== 'cancel' && closed)) return;
     updating.current = true;
     setBusy(true);
     setProblem('');
     try {
-      if (decision === 'accept') await acceptPlan(plan.id);
+      if (decision === 'cancel') {
+        await cancelPlan(plan.id);
+        setConfirmCancellation(false);
+      } else if (decision === 'accept') await acceptPlan(plan.id);
       else await resolveProposal(plan.id, decision);
     } catch (failure) {
       setProblem(errorMessage(failure, 'Could not update this proposal. Try again.'));
@@ -67,6 +71,17 @@ export function ChatPlan({ matchId, plans, userId, closed, reload }: {
         <PlanDetails plan={plan} />
         {plan.status === 'confirmed' && !expired && <PlanCalendarAction plan={plan} />}
       </>}
+      {plan?.status === 'confirmed' && !expired && userId && (
+        confirmCancellation ? (
+          <>
+            <Text style={{ color: colors.secondary }}>This cancels the plan for both of you. Calendar copies can be removed from your calendar.</Text>
+            <Action title="Confirm cancellation" disabled={busy} onPress={() => respond('cancel')} />
+            <Action title="Keep the plan" disabled={busy} onPress={() => setConfirmCancellation(false)} />
+          </>
+        ) : (
+          <Action title="Cancel this plan" disabled={busy} onPress={() => setConfirmCancellation(true)} />
+        )
+      )}
       {proposed && expired && <Text style={{ color: colors.secondary }}>This proposed time has passed.</Text>}
       {proposed && own && <Action title="Withdraw proposal" disabled={busy} onPress={() => respond('withdrawn')} />}
       {proposed && !own && (
