@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Text } from 'react-native';
 
@@ -6,9 +6,13 @@ import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { profileName, saveProfile } from '@/features/api';
+import { inviteToken } from '@/features/invites';
 
 export default function ProfileScreen() {
   const colors = useAccountColors();
+  const router = useRouter();
+  const params = useLocalSearchParams<{ invite?: string }>();
+  const invite = typeof params.invite === 'string' ? inviteToken(params.invite) : null;
   const userId = useSession().session?.user.id;
   const [name, setName] = useState('');
   const [ready, setReady] = useState(false);
@@ -33,6 +37,10 @@ export default function ProfileScreen() {
     setSaving(true);
     try {
       await saveProfile(userId, name);
+      if (invite) {
+        router.replace({ pathname: '/invite/[token]', params: { token: invite } });
+        return;
+      }
       setName(name.trim());
       setSaved(true);
     } catch {
@@ -44,7 +52,13 @@ export default function ProfileScreen() {
 
   return (
     <AccountPage>
-      <Link href="/circle" replace style={[accountStyles.link, { color: colors.secondary }]}>Your circle</Link>
+      <Link
+        href={invite ? { pathname: '/invite/[token]', params: { token: invite } } : '/circle'}
+        replace
+        style={[accountStyles.link, { color: colors.secondary }]}
+      >
+        {invite ? 'Back to invitation' : 'Your circle'}
+      </Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Your name</Text>
       <Text style={[accountStyles.copy, { color: colors.secondary }]}>Friends see this name on your invites and in their circles.</Text>
       <Field accessibilityLabel="Display name" placeholder="Display name" maxLength={60}
