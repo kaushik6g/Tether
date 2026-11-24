@@ -5,12 +5,15 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Problem } from '@/components/feature-ui';
-import { listCircle, profileName, tapFriend, type Friend } from '@/features/api';
+import { listCircle, listMatches, profileName, tapFriend, type Friend } from '@/features/api';
+import { useMatchFeed } from '@/features/use-match-feed';
 import { supabase } from '@/lib/supabase';
 
 export default function CircleScreen() {
   const colors = useAccountColors();
   const router = useRouter();
+  const { data: catchUps } = useMatchFeed('circle-catch-ups', undefined, listMatches);
+  const openMatch = catchUps?.find((match) => !match.closed_at);
   const userId = useSession().session?.user.id;
   const pendingTaps = useRef(new Set<string>());
   const [friends, setFriends] = useState<Friend[] | null>(null);
@@ -72,6 +75,14 @@ export default function CircleScreen() {
       </Link>
       <Link href="/invitations" style={[accountStyles.link, { color: colors.text }]}>Invitations</Link>
       <Link href="/matches" style={[accountStyles.link, { color: colors.text }]}>Catch-ups</Link>
+      {openMatch && (
+        <Link
+          href={{ pathname: '/chat/[id]', params: { id: openMatch.id } }}
+          style={[accountStyles.link, { color: colors.text }]}
+        >
+          You and {openMatch.display_name} want to catch up.
+        </Link>
+      )}
       {friends === null && !error && <Text style={{ color: colors.secondary }}>Loading your circle…</Text>}
       {friends?.length === 0 && <Text style={[accountStyles.copy, { color: colors.secondary }]}>Invite a friend to start your circle.</Text>}
       {friends?.map((friend) => (
