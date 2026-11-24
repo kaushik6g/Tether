@@ -4,8 +4,10 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
+import { ChatPlan } from '@/components/chat-plan';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { closeMatch, listMatches, listMessages, sendMessage } from '@/features/api';
+import { listMatchPlans } from '@/features/plans';
 import { useMatchFeed } from '@/features/use-match-feed';
 
 export default function ChatScreen() {
@@ -25,10 +27,10 @@ function Chat({ id }: { id: string }) {
   const [problem, setProblem] = useState('');
 
   const load = useCallback(async () => {
-    const [matches, messages] = await Promise.all([listMatches(), listMessages(id)]);
-    return { match: matches.find((entry) => entry.id === id), messages };
+    const [matches, messages, plans] = await Promise.all([listMatches(), listMessages(id), listMatchPlans(id)]);
+    return { match: matches.find((entry) => entry.id === id), messages, plans };
   }, [id]);
-  const { data, error, reload } = useMatchFeed('catch-up-' + id, id, load);
+  const { data, error, reload } = useMatchFeed('catch-up-' + id, id, load, true);
 
   async function update(close: boolean) {
     if (busy || !data?.match || data.match.closed_at || (!close && !draft.trim())) return;
@@ -60,6 +62,7 @@ function Chat({ id }: { id: string }) {
       {!data && !error && <Text style={{ color: colors.secondary }}>Opening conversation…</Text>}
       {data && !match && <Problem message="This conversation is unavailable." />}
       {match && <>
+        <ChatPlan matchId={id} plans={data.plans} userId={userId} closed={!!match.closed_at} reload={reload} />
         {data.messages.map((message) => {
           const sender = !message.sender_id ? 'Tether' : message.sender_id === userId ? 'You' : match.display_name;
           return (
@@ -69,7 +72,7 @@ function Chat({ id }: { id: string }) {
             </View>
           );
         })}
-        {match.closed_at ? <Text style={{ color: colors.secondary }}>{match.closed_reason ? 'This chat is closed.' : 'Plan made.'}</Text> : <>
+        {match.closed_at ? <Text style={{ color: colors.secondary }}>{match.closed_reason || data.plans.length > 0 ? 'This chat is closed.' : 'Plan made.'}</Text> : <>
           <Field accessibilityLabel="Message" placeholder="Suggest a time or send a reply"
             maxLength={1000} editable={!busy} value={draft} onChangeText={setDraft} multiline />
           <Action title="Send reply" onPress={() => void update(false)} disabled={busy || !draft.trim()} />
