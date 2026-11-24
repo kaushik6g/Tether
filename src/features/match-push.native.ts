@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
+import { AndroidImportance, IosAuthorizationStatus } from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
@@ -69,7 +70,7 @@ async function updateRegistration(userId: string, previous: Registration | null,
 
 async function permissionGranted() {
   const permission = await Notifications.getPermissionsAsync();
-  return permission.granted || permission.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL;
+  return permission.granted || permission.ios?.status === IosAuthorizationStatus.PROVISIONAL;
 }
 
 export function matchPushEnabled(userId: string) {
@@ -83,7 +84,7 @@ export function enableMatchPush(userId: string) {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('matches', {
         name: 'Catch-ups',
-        importance: Notifications.AndroidImportance.DEFAULT,
+        importance: AndroidImportance.DEFAULT,
       });
     }
     if (!await permissionGranted()) {

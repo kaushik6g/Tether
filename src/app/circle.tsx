@@ -7,6 +7,7 @@ import { AccountPage, accountStyles, useAccountColors } from '@/components/accou
 import { Action, Problem } from '@/components/feature-ui';
 import { listCircle, listMatches, profileName, tapFriend, type Friend } from '@/features/api';
 import { useMatchFeed } from '@/features/use-match-feed';
+import { disableMatchPush, matchPushAvailable } from '@/features/match-push';
 import { supabase } from '@/lib/supabase';
 
 export default function CircleScreen() {
@@ -58,6 +59,7 @@ export default function CircleScreen() {
     if (!supabase || signingOut) return;
     setSigningOut(true);
     try {
+      if (userId) await disableMatchPush(userId);
       const { error: failure } = await supabase.auth.signOut({ scope: 'local' });
       if (failure) setError('Could not sign out. Try again.');
     } catch {
@@ -74,6 +76,9 @@ export default function CircleScreen() {
         {name ? 'Edit display name' : 'Set your display name'}
       </Link>
       <Link href="/invitations" style={[accountStyles.link, { color: colors.text }]}>Invitations</Link>
+      {matchPushAvailable && (
+        <Link href="/notifications" style={[accountStyles.link, { color: colors.text }]}>Match notifications</Link>
+      )}
       <Link href="/matches" style={[accountStyles.link, { color: colors.text }]}>Catch-ups</Link>
       {openMatch && (
         <Link

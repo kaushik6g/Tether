@@ -1,13 +1,7 @@
 export const matchPushAvailable = false;
-
-export async function matchPushEnabled(_userId: string): Promise<boolean> {
-  return false;
-}
-
-export async function enableMatchPush(_userId: string): Promise<void> {
+export const matchPushEnabled: (userId: string) => Promise<boolean> = async () => false;
+export const enableMatchPush: (userId: string) => Promise<void> = async () => {
   throw new Error('Match notifications are available in the mobile app.');
-}
-
-export async function disableMatchPush(_userId: string): Promise<void> {}
-
-export async function syncMatchPush(_userId: string, _devicePushToken?: unknown): Promise<void> {}
+};
+export const disableMatchPush: (userId: string) => Promise<void> = async () => {};
+export const syncMatchPush: (userId: string, devicePushToken?: unknown) => Promise<void> = async () => {};

@@ -4,6 +4,7 @@ import { ActivityIndicator } from 'react-native';
 
 import { SessionProvider, useSession } from '@/auth/session';
 import { AccountPage, useAccountColors } from '@/components/account-ui';
+import { MatchNotificationListener } from '@/components/match-notification-listener';
 
 export default function RootLayout() {
   return (
@@ -27,20 +28,24 @@ function AccountRoutes() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
-      <Stack.Protected guard={!session}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="sign-in" />
-        <Stack.Screen name="sign-up" />
-      </Stack.Protected>
-      <Stack.Protected guard={!!session}>
-        <Stack.Screen name="circle" />
-        <Stack.Screen name="profile" />
-        <Stack.Screen name="invitations" />
-        <Stack.Screen name="matches" />
-        <Stack.Screen name="chat/[id]" />
-      </Stack.Protected>
-      <Stack.Screen name="invite/[token]" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+        <Stack.Protected guard={!session}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="sign-in" />
+          <Stack.Screen name="sign-up" />
+        </Stack.Protected>
+        <Stack.Protected guard={!!session}>
+          <Stack.Screen name="circle" />
+          <Stack.Screen name="notifications" />
+          <Stack.Screen name="profile" />
+          <Stack.Screen name="invitations" />
+          <Stack.Screen name="matches" />
+          <Stack.Screen name="chat/[id]" />
+        </Stack.Protected>
+        <Stack.Screen name="invite/[token]" />
+      </Stack>
+      <MatchNotificationListener userId={session?.user.id} />
+    </>
   );
 }

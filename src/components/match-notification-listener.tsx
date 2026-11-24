@@ -1,3 +1,1 @@
-export function MatchNotificationListener(_props: { userId: string | undefined }) {
-  return null;
-}
+export const MatchNotificationListener: (props: { userId: string | undefined }) => null = () => null;
