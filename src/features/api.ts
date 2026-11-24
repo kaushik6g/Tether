@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
+export type ActiveInvite = { token: string; expires_at: string };
 export type Friend = { friend_id: string; display_name: string };
 export type Match = { id: string; display_name: string; created_at: string; closed_at: string | null };
 export type Message = { id: string; sender_id: string | null; body: string; created_at: string };
@@ -27,6 +28,8 @@ export async function saveProfile(userId: string, name: string) {
 }
 
 export function listCircle() { return rpc<Friend[]>('list_circle'); }
+export function listActiveInvites() { return rpc<ActiveInvite[]>('list_active_circle_invites'); }
+export function revokeInvite(token: string) { return rpc<boolean>('revoke_circle_invite', { invite_token: token }); }
 export function createInvite() { return rpc<string>('create_circle_invite'); }
 export function previewInvite(token: string) { return rpc<string | null>('preview_circle_invite', { invite_token: token }); }
 export function acceptInvite(token: string) { return rpc<void>('accept_circle_invite', { invite_token: token }); }
