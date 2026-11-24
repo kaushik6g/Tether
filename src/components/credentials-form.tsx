@@ -1,12 +1,16 @@
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { rememberInvite } from '@/auth/pending-invite';
+import { inviteToken } from '@/features/invites';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { supabase } from '@/lib/supabase';
 
 export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const colors = useAccountColors();
+  const params = useLocalSearchParams<{ invite?: string }>();
+  const invite = typeof params.invite === 'string' ? inviteToken(params.invite) : null;
   const create = mode === 'sign-up';
   const title = create ? 'Create account' : 'Sign in';
   const passwordInput = useRef<ComponentRef<typeof TextInput>>(null);
@@ -35,6 +39,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     requestInFlight.current = true;
     setSubmitting(true);
     try {
+      if (invite) await rememberInvite(invite, address);
       const credentials = { email: address, password };
       if (create) {
         const { data, error: failure } = await supabase.auth.signUp(credentials);
@@ -112,7 +117,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         </Text>
       </Pressable>
       <Link
-        href={create ? '/sign-in' : '/sign-up'}
+        href={{ pathname: create ? '/sign-in' : '/sign-up', params: invite ? { invite } : {} }}
         replace
         style={[accountStyles.link, { color: colors.text }]}
       >

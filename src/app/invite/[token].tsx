@@ -63,9 +63,9 @@ function Invitation({ token }: { token: string | null }) {
           </>
         ) : (
           <>
-            <Text style={[accountStyles.copy, { color: colors.secondary }]}>Sign in or create an account, then reopen this invitation to accept it.</Text>
-            <Link href="/sign-in" style={[accountStyles.link, { color: colors.text }]}>Sign in</Link>
-            <Link href="/sign-up" style={[accountStyles.link, { color: colors.text }]}>Create an account</Link>
+            <Text style={[accountStyles.copy, { color: colors.secondary }]}>Sign in or create an account to return to this invitation.</Text>
+            <Link href={{ pathname: '/sign-in', params: { invite: token ?? '' } }} style={[accountStyles.link, { color: colors.text }]}>Sign in</Link>
+            <Link href={{ pathname: '/sign-up', params: { invite: token ?? '' } }} style={[accountStyles.link, { color: colors.text }]}>Create an account</Link>
           </>
         )}
       </>}

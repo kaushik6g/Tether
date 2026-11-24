@@ -4,6 +4,7 @@ import { ActivityIndicator } from 'react-native';
 
 import { SessionProvider, useSession } from '@/auth/session';
 import { AccountPage, useAccountColors } from '@/components/account-ui';
+import { InviteAfterAuth } from '@/components/invite-after-auth';
 import { MatchNotificationListener } from '@/components/match-notification-listener';
 
 export default function RootLayout() {
@@ -45,6 +46,7 @@ function AccountRoutes() {
         </Stack.Protected>
         <Stack.Screen name="invite/[token]" />
       </Stack>
+      <InviteAfterAuth />
       <MatchNotificationListener userId={session?.user.id} />
     </>
   );
