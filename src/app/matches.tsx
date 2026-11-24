@@ -20,7 +20,7 @@ export default function MatchesScreen() {
         <View key={match.id} style={[styles.item, { borderColor: colors.border }]}>
           <Link href={{ pathname: '/chat/[id]', params: { id: match.id } }}
             style={[accountStyles.link, { color: colors.text }]}>{match.display_name}</Link>
-          <Text style={{ color: colors.secondary }}>{match.closed_at ? 'Plan made' : 'Ready to make a plan'}</Text>
+          <Text style={{ color: colors.secondary }}>{match.closed_reason ? 'Chat closed' : match.closed_at ? 'Plan made' : 'Ready to make a plan'}</Text>
         </View>
       ))}
       {error ? <Problem message="Could not load catch-ups. Try again." /> : null}

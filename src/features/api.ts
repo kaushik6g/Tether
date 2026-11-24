@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 
 export type ActiveInvite = { token: string; expires_at: string };
 export type Friend = { friend_id: string; display_name: string };
-export type Match = { id: string; display_name: string; created_at: string; closed_at: string | null };
+export type Match = { id: string; display_name: string; created_at: string; closed_at: string | null; closed_reason: 'connection_ended' | null };
 export type Message = { id: string; sender_id: string | null; body: string; created_at: string };
 
 function client() {
@@ -38,7 +38,7 @@ export function createInvite() { return rpc<string>('create_circle_invite'); }
 export function previewInvite(token: string) { return rpc<string | null>('preview_circle_invite', { invite_token: token }); }
 export function acceptInvite(token: string) { return rpc<void>('accept_circle_invite', { invite_token: token }); }
 export function tapFriend(friend: string) { return rpc<string | null>('tap_friend', { friend }); }
-export function listMatches() { return rpc<Match[]>('list_matches'); }
+export function listMatches() { return rpc<Match[]>('list_catchups'); }
 export function sendMessage(match: string, message: string) {
   return rpc<void>('send_match_message', { match, message });
 }

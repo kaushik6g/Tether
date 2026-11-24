@@ -69,7 +69,7 @@ function Chat({ id }: { id: string }) {
             </View>
           );
         })}
-        {match.closed_at ? <Text style={{ color: colors.secondary }}>Plan made.</Text> : <>
+        {match.closed_at ? <Text style={{ color: colors.secondary }}>{match.closed_reason ? 'This chat is closed.' : 'Plan made.'}</Text> : <>
           <Field accessibilityLabel="Message" placeholder="Suggest a time or send a reply"
             maxLength={1000} editable={!busy} value={draft} onChangeText={setDraft} multiline />
           <Action title="Send reply" onPress={() => void update(false)} disabled={busy || !draft.trim()} />
