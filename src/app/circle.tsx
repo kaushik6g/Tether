@@ -1,54 +1,98 @@
-import { useRef, useState } from 'react';
-import { Pressable, Text } from 'react-native';
+import { Link, useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
+import { Action, Problem } from '@/components/feature-ui';
+import { listCircle, profileName, tapFriend, type Friend } from '@/features/api';
 import { supabase } from '@/lib/supabase';
 
 export default function CircleScreen() {
   const colors = useAccountColors();
-  const { session } = useSession();
-  const requestInFlight = useRef(false);
-  const [signingOut, setSigningOut] = useState(false);
+  const router = useRouter();
+  const userId = useSession().session?.user.id;
+  const pendingTaps = useRef(new Set<string>());
+  const [friends, setFriends] = useState<Friend[] | null>(null);
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const retry = useRef(() => {});
+  const [signingOut, setSigningOut] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    if (!userId) return;
+    let attempt = 0;
+    function load() {
+      if (!userId) return;
+      const current = ++attempt;
+      setError('');
+      void Promise.all([listCircle(), profileName(userId)]).then(([members, displayName]) => {
+        if (attempt === current) { setFriends(members); setName(displayName); }
+      }).catch(() => {
+        if (attempt === current) setError('Could not load your circle. Try again.');
+      });
+    }
+    retry.current = load;
+    load();
+    return () => { attempt++; retry.current = () => {}; };
+  }, [userId]));
+
+  async function tap(friendId: string) {
+    if (pendingTaps.current.has(friendId)) return;
+    pendingTaps.current.add(friendId);
+    setError('');
+    try {
+      const id = await tapFriend(friendId);
+      if (id) router.push({ pathname: '/chat/[id]', params: { id } });
+    } catch {
+      setError('Could not save your tap. Try again.');
+    } finally {
+      pendingTaps.current.delete(friendId);
+    }
+  }
 
   async function signOut() {
-    if (!supabase || requestInFlight.current) return;
-    requestInFlight.current = true;
+    if (!supabase || signingOut) return;
     setSigningOut(true);
-    setError('');
     try {
       const { error: failure } = await supabase.auth.signOut({ scope: 'local' });
       if (failure) setError('Could not sign out. Try again.');
     } catch {
       setError('Could not sign out. Try again.');
     } finally {
-      requestInFlight.current = false;
       setSigningOut(false);
     }
   }
 
   return (
     <AccountPage>
-      <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>
-        Your circle
-      </Text>
-      {session?.user.email ? (
-        <Text style={[accountStyles.copy, { color: colors.secondary }]}>{session.user.email}</Text>
-      ) : null}
-      <Text style={[accountStyles.copy, { color: colors.text }]}>Your circle is empty.</Text>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ busy: signingOut, disabled: signingOut }}
-        disabled={signingOut}
-        onPress={signOut}
-        style={[accountStyles.button, { backgroundColor: colors.button, opacity: signingOut ? 0.55 : 1 }]}
-      >
-        <Text style={[accountStyles.buttonText, { color: colors.buttonText }]}>
-          {signingOut ? 'Signing out…' : 'Sign out'}
-        </Text>
-      </Pressable>
-      {error ? <Text accessibilityRole="alert" style={{ color: colors.error }}>{error}</Text> : null}
+      <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Your circle</Text>
+      <Link href="/profile" style={[accountStyles.link, { color: colors.text }]}>
+        {name ? 'Edit display name' : 'Set your display name'}
+      </Link>
+      <Link href="/invitations" style={[accountStyles.link, { color: colors.text }]}>Invitations</Link>
+      <Link href="/matches" style={[accountStyles.link, { color: colors.text }]}>Catch-ups</Link>
+      {friends === null && !error && <Text style={{ color: colors.secondary }}>Loading your circle…</Text>}
+      {friends?.length === 0 && <Text style={[accountStyles.copy, { color: colors.secondary }]}>Invite a friend to start your circle.</Text>}
+      {friends?.map((friend) => (
+        <View key={friend.friend_id} style={[styles.row, { borderColor: colors.border }]}>
+          <Text style={[styles.name, { color: colors.text }]}>{friend.display_name}</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={'Catch up with ' + friend.display_name}
+            onPress={() => void tap(friend.friend_id)} style={styles.tap}>
+            <Text style={[styles.heart, { color: colors.text }]}>♡</Text>
+          </Pressable>
+        </View>
+      ))}
+      {error ? <Problem message={error} /> : null}
+      {error && friends === null && <Action title="Try again" onPress={() => retry.current()} />}
+      <Action title={signingOut ? 'Signing out…' : 'Sign out'} disabled={signingOut} onPress={signOut} />
     </AccountPage>
   );
 }
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', gap: 12, alignItems: 'center', borderBottomWidth: 1, paddingVertical: 6 },
+  name: { flex: 1, fontSize: 18 },
+  tap: { minHeight: 48, minWidth: 48, justifyContent: 'center', alignItems: 'center' },
+  heart: { fontSize: 30 },
+});
