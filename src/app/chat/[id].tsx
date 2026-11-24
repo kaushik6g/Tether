@@ -1,12 +1,13 @@
 import { Link, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { ChatPlan } from '@/components/chat-plan';
 import { Action, Field, Problem } from '@/components/feature-ui';
-import { closeMatch, listMatches, listMessages, sendMessage } from '@/features/api';
+import { closeMatch, listMatches, listMessagePage, sendMessage, type MessagePage } from '@/features/api';
+import { mergeMessagePages, prependMessages } from '@/features/message-timeline';
 import { listMatchPlans, listPlanHistory } from '@/features/plans';
 import { useMatchFeed } from '@/features/use-match-feed';
 
@@ -25,12 +26,36 @@ function Chat({ id }: { id: string }) {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
+  const loading = useRef(false);
+  const [loaded, setLoaded] = useState<MessagePage>();
+  const [olderBusy, setOlderBusy] = useState(false);
+  const [olderError, setOlderError] = useState('');
 
   const load = useCallback(async () => {
-    const [matches, messages, plans, history] = await Promise.all([listMatches(), listMessages(id), listMatchPlans(id), listPlanHistory(id)]);
+    const [matches, messages, plans, history] = await Promise.all([listMatches(), listMessagePage(id), listMatchPlans(id), listPlanHistory(id)]);
     return { match: matches.find((entry) => entry.id === id), messages, plans, history };
   }, [id]);
   const { data, error, reload } = useMatchFeed('catch-up-' + id, id, load, true);
+
+  const timeline = data ? mergeMessagePages(loaded, data.messages) : undefined;
+
+  async function loadOlder() {
+    const cursor = timeline?.messages[0];
+    if (!cursor || !timeline.hasMore || loading.current) return;
+
+    loading.current = true;
+    setOlderBusy(true);
+    setOlderError('');
+    try {
+      const previous = await listMessagePage(id, cursor);
+      setLoaded(prependMessages(previous, timeline.messages));
+    } catch {
+      setOlderError('Could not load older replies. Try again.');
+    } finally {
+      loading.current = false;
+      setOlderBusy(false);
+    }
+  }
 
   async function update(close: boolean) {
     if (busy || !data?.match || data.match.closed_at || (!close && !draft.trim())) return;
@@ -63,7 +88,12 @@ function Chat({ id }: { id: string }) {
       {data && !match && <Problem message="This conversation is unavailable." />}
       {match && <>
         <ChatPlan matchId={id} plans={data.plans} history={data.history} userId={userId} closed={!!match.closed_at} reload={reload} />
-        {data.messages.map((message) => {
+        {timeline?.hasMore && (
+          <Action title={olderBusy ? 'Loading older replies' : 'Load older replies'}
+            disabled={olderBusy} onPress={loadOlder} />
+        )}
+        {olderError ? <Problem message={olderError} /> : null}
+        {timeline?.messages.map((message) => {
           const sender = !message.sender_id ? 'Tether' : message.sender_id === userId ? 'You' : match.display_name;
           return (
             <View key={message.id} style={[styles.message, { borderColor: colors.border }]}>

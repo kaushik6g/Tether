@@ -45,11 +45,16 @@ export function sendMessage(match: string, message: string) {
 }
 export function closeMatch(match: string) { return rpc<void>('close_match', { match }); }
 
-export async function listMessages(match: string): Promise<Message[]> {
-  const { data, error } = await client().from('messages').select('id,sender_id,body,created_at')
-    .eq('match_id', match).order('created_at', { ascending: false }).order('id', { ascending: false }).limit(100);
-  if (error) throw error;
-  return (data as Message[]).reverse();
+export type MessagePage = { messages: Message[]; hasMore: boolean };
+const messagePageSize = 40;
+
+export async function listMessagePage(match: string, before?: Message): Promise<MessagePage> {
+  const rows = await rpc<Message[]>('list_match_message_page', {
+    target_match: match,
+    before_at: before?.created_at ?? null,
+    before_id: before?.id ?? null,
+  });
+  return { messages: rows.slice(0, messagePageSize).reverse(), hasMore: rows.length > messagePageSize };
 }
 
 export function errorMessage(error: unknown, fallback: string) {
