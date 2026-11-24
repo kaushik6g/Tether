@@ -1,3 +1,4 @@
+import { randomUUID } from 'expo-crypto';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -24,6 +25,8 @@ function Chat({ id }: { id: string }) {
   const colors = useAccountColors();
   const userId = useSession().session?.user.id;
   const [draft, setDraft] = useState('');
+  const submitting = useRef(false);
+  const attempt = useRef<{ body: string; requestId: string } | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
   const loading = useRef(false);
@@ -41,7 +44,7 @@ function Chat({ id }: { id: string }) {
 
   async function loadOlder() {
     const cursor = timeline?.messages[0];
-    if (!cursor || !timeline.hasMore || loading.current) return;
+    if (!timeline?.hasMore || !cursor || loading.current) return;
 
     loading.current = true;
     setOlderBusy(true);
@@ -58,14 +61,18 @@ function Chat({ id }: { id: string }) {
   }
 
   async function update(close: boolean) {
-    if (busy || !data?.match || data.match.closed_at || (!close && !draft.trim())) return;
+    const body = draft.trim();
+    if (submitting.current || !data?.match || data.match.closed_at || (!close && !body)) return;
+    submitting.current = true;
     setBusy(true);
     setProblem('');
     try {
       if (close) {
         await closeMatch(id);
       } else {
-        await sendMessage(id, draft.trim());
+        if (attempt.current?.body !== body) attempt.current = { body, requestId: randomUUID() };
+        await sendMessage(id, body, attempt.current.requestId);
+        attempt.current = undefined;
         setDraft('');
       }
       reload();
@@ -73,6 +80,7 @@ function Chat({ id }: { id: string }) {
       setProblem(close ? 'Could not mark the plan as made.' : 'Could not send your message. Try again.');
       reload();
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }

@@ -40,8 +40,8 @@ export function previewInvite(token: string) { return rpc<string | null>('previe
 export function acceptInvite(token: string) { return rpc<void>('accept_circle_invite', { invite_token: token }); }
 export function tapFriend(friend: string) { return rpc<string | null>('tap_friend', { friend }); }
 export function listMatches() { return rpc<Match[]>('list_catchups'); }
-export function sendMessage(match: string, message: string) {
-  return rpc<void>('send_match_message', { match, message });
+export function sendMessage(match: string, message: string, requestId: string) {
+  return rpc<void>('send_match_message_once', { target_match: match, message, request_id: requestId });
 }
 export function closeMatch(match: string) { return rpc<void>('close_match', { match }); }
 
