@@ -58,6 +58,7 @@ export default function PrivacyScreen() {
           <Action title={'Unblock ' + friend.display_name} disabled={busy} onPress={() => unblock(friend.friend_id)} />
         </View>
       ))}
+      <Link href="/delete-account" style={[accountStyles.link, { color: colors.error }]}>Delete account</Link>
       {error ? <Problem message={error} /> : null}
     </AccountPage>
   );

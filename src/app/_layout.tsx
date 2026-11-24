@@ -40,6 +40,7 @@ function AccountRoutes() {
           <Stack.Screen name="circle" />
           <Stack.Screen name="friend/[id]" />
           <Stack.Screen name="privacy" />
+          <Stack.Screen name="delete-account" />
           <Stack.Screen name="notifications" />
           <Stack.Screen name="profile" />
           <Stack.Screen name="invitations" />

@@ -31,6 +31,7 @@ export function removeFriend(friend: string) { return rpc<void>('remove_circle_f
 export function blockFriend(friend: string) { return rpc<void>('block_circle_friend', { friend }); }
 export function listBlockedFriends() { return rpc<Friend[]>('list_circle_blocks'); }
 export function unblockFriend(friend: string) { return rpc<void>('unblock_circle_friend', { friend }); }
+export function deleteMyAccount() { return rpc<void>('delete_my_account'); }
 export function listCircle() { return rpc<Friend[]>('list_circle'); }
 export function listActiveInvites() { return rpc<ActiveInvite[]>('list_active_circle_invites'); }
 export function revokeInvite(token: string) { return rpc<boolean>('revoke_circle_invite', { invite_token: token }); }
