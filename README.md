@@ -37,7 +37,7 @@ Apply the SQL migrations in `supabase/migrations` to the Tether Supabase project
 
 After signing in, save your display name and open **Invitations**. You can share a single-use code with a friend. They can paste the code into their Invitations screen, review who sent it, and choose whether to join.
 
-To share browser links, deploy the Expo web app to an HTTPS URL and set `EXPO_PUBLIC_INVITE_BASE_URL` to the deployed origin in the app environment. The same app serves `/invite/<token>` as a public preview. People can open it without installing the app and sign in on the web to accept it.
+[Publish browser invitations](docs/BROWSER_INVITATIONS.md) to give friends an HTTPS link they can open without installing Tether. Guests return to the same invitation after signing in.
 
 A private tap expires after seven days. When friends tap each other within that window, Tether creates a catch-up and adds a suggested opener. The chat shows on both friends’ circle screens while the app is open. Either participant can mark the plan as made. Closed chats remain readable under **Catch-ups**.
 
