@@ -14,6 +14,7 @@ export default function MatchesScreen() {
     <AccountPage>
       <Link href="/circle" replace style={[accountStyles.link, { color: colors.secondary }]}>Your circle</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Catch-ups</Text>
+      <Link href="/upcoming" style={[accountStyles.link, { color: colors.text }]}>Upcoming plans</Link>
       {data === undefined && !error && <Text style={{ color: colors.secondary }}>Loading catch-ups…</Text>}
       {data?.length === 0 && <Text style={[accountStyles.copy, { color: colors.secondary }]}>A chat opens when you and a friend both tap.</Text>}
       {data?.map((match) => (

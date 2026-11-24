@@ -45,6 +45,7 @@ function AccountRoutes() {
           <Stack.Screen name="profile" />
           <Stack.Screen name="invitations" />
           <Stack.Screen name="matches" />
+          <Stack.Screen name="upcoming" />
           <Stack.Screen name="chat/[id]" />
           <Stack.Screen name="plan/[id]" />
         </Stack.Protected>
