@@ -41,6 +41,8 @@ To share browser links, deploy the Expo web app to an HTTPS URL and set `EXPO_PU
 
 A private tap expires after seven days. When friends tap each other within that window, Tether creates a catch-up and adds a suggested opener. The chat shows on both friends’ circle screens while the app is open. Either participant can mark the plan as made. Closed chats remain readable under **Catch-ups**.
 
+[Set up background match notifications](docs/MATCH_NOTIFICATIONS.md)
+
 ## Product principles
 
 - One-sided taps stay private.
