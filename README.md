@@ -4,18 +4,25 @@ Tether helps people reconnect with close friends through private, mutual signals
 
 ## Local development
 
-Requirements: Node.js LTS and npm.
+Use Node.js 24 LTS and npm.
 
 ```powershell
-npm install
+npm ci
 npm run start
 ```
 
 Use the Expo development server to open the app on a device, Android emulator, iOS simulator, or web browser. The iOS simulator requires macOS.
 
+Run these checks before opening a pull request.
+
+`powershell
+npm run lint
+npm run typecheck
+`
+
 ## Current stage
 
-This repository contains the Expo and React Native TypeScript starter. Product screens and Supabase integration will be added in the next development steps.
+The app opens to a Tether welcome screen. Accounts, friend circles, and Supabase integration are planned for later phases.
 
 ## Product principles
 
