@@ -46,6 +46,7 @@ function AccountRoutes() {
           <Stack.Screen name="invitations" />
           <Stack.Screen name="matches" />
           <Stack.Screen name="chat/[id]" />
+          <Stack.Screen name="plan/[id]" />
         </Stack.Protected>
         <Stack.Screen name="invite/[token]" />
       </Stack>
