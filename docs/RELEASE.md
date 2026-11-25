@@ -2,7 +2,17 @@
 
 ## Before publishing
 
-Run `npm ci`, `npm run check`, and `npm run build:web` from a clean checkout. Check that the target Supabase project has all migrations in `supabase/migrations` applied in order. Keep the service-role key on the backend. The Expo client uses a publishable key.
+Run `npm ci` and `npm run check` from a clean checkout. Set the release environment variables in the shell or the appropriate local Expo environment file, then run the checks for your target.
+
+| Target | Check configuration | Export a bundle |
+| --- | --- | --- |
+| Web | `npm run check:release-env -- web` | `npm run build:web` writes to `dist/` |
+| Android | `npm run check:release-env -- android` | `npm run build:android` writes to `dist/android/` |
+| iOS | `npm run check:release-env -- ios` | `npx expo export --platform ios --output-dir dist/ios` |
+
+A native bundle export checks that Metro can package the code. Use EAS Build to create signed Android and iOS releases. Run native exports after the web export when using the same checkout, since the web export can clear its output directory.
+
+Check that the target Supabase project has all migrations in `supabase/migrations` applied in order. Keep the service-role key on the backend. The Expo client uses a publishable key.
 
 ## Web
 
