@@ -11,6 +11,7 @@ export default function NotificationsScreen() {
   const colors = useAccountColors();
   const userId = useSession().session?.user.id;
   const inFlight = useRef(false);
+  const reload = useRef(() => {});
   const [enabled, setEnabled] = useState<boolean>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -18,12 +19,19 @@ export default function NotificationsScreen() {
   useFocusEffect(useCallback(() => {
     if (!userId || !matchPushAvailable) return;
     let active = true;
-    void matchPushEnabled(userId).then((current) => {
-      if (active) setEnabled(current);
-    }).catch(() => {
-      if (active) setError('Could not read your notification setting.');
-    });
-    return () => { active = false; };
+    let attempt = 0;
+    const load = () => {
+      const currentAttempt = ++attempt;
+      setError('');
+      void matchPushEnabled(userId).then((current) => {
+        if (active && currentAttempt === attempt) setEnabled(current);
+      }).catch(() => {
+        if (active && currentAttempt === attempt) setError('Could not read your notification setting.');
+      });
+    };
+    reload.current = load;
+    load();
+    return () => { active = false; reload.current = () => {}; };
   }, [userId]));
 
   async function toggle() {
@@ -58,6 +66,7 @@ export default function NotificationsScreen() {
         <Text style={{ color: colors.secondary }}>Match alerts are available on configured mobile builds.</Text>
       )}
       {error ? <Problem message={error} /> : null}
+      {error && enabled === undefined && <Action title="Reload notification setting" onPress={() => reload.current()} />}
     </AccountPage>
   );
 }
