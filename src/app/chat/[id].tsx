@@ -122,6 +122,7 @@ function Chat({ id }: { id: string }) {
         {match.closed_at ? <Text style={{ color: colors.secondary }}>{match.closed_reason || data.plans.length > 0 ? 'This chat is closed.' : 'Plan made.'}</Text> : <>
           <Field accessibilityLabel="Message" placeholder="Suggest a time or send a reply"
             maxLength={1000} editable={!busy} value={draft} onChangeText={setDraft} multiline />
+          {problem ? <Problem message={problem} /> : null}
           <Action title="Send reply" onPress={() => void update(false)} disabled={busy || !draft.trim()} />
           {confirmClose ? (
             <>
@@ -134,7 +135,7 @@ function Chat({ id }: { id: string }) {
           )}
         </>}
       </>}
-      {problem ? <Problem message={problem} /> : null}
+      {(!match || match.closed_at) && problem ? <Problem message={problem} /> : null}
       {error ? <Problem message="Could not refresh this conversation." /> : null}
       {error && <Action title="Try again" onPress={reload} />}
     </AccountPage>
