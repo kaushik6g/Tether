@@ -105,8 +105,10 @@ function Invitation({ token }: { token: string | null }) {
               <Link href={{ pathname: '/profile', params: { invite: token } }}
                 style={[accountStyles.link, { color: colors.text }]}>Set display name</Link>
             </>
-          ) : (
-            <Action title={busy ? 'Accepting' : 'Add to my circle'} disabled={busy || !named || nameFailed} onPress={accept} />
+          ) : named && !nameFailed ? (
+            <Action title={busy ? 'Accepting' : 'Add to my circle'} disabled={busy} onPress={accept} />
+          ) : nameFailed ? null : (
+            <Text accessibilityLiveRegion="polite" style={{ color: colors.secondary }}>Checking your profile…</Text>
           )
         ) : (
           <>
