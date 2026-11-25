@@ -44,6 +44,15 @@ export async function listUpcomingPlans(): Promise<CatchupPlan[]> {
   return data as CatchupPlan[];
 }
 
+export async function listRecentPlans(): Promise<CatchupPlan[]> {
+  const now = new Date().toISOString();
+  const { data, error } = await client().from('catchup_plans').select(columns)
+    .or('status.eq.cancelled,and(status.eq.confirmed,starts_at.lte.' + now + ')')
+    .order('starts_at', { ascending: false }).order('id', { ascending: false }).limit(25);
+  if (error) throw error;
+  return data as CatchupPlan[];
+}
+
 export function suggestPlan(match: string, expected: string | null, draft: PlanDraft) {
   return rpc<string>('suggest_catchup_plan', {
     target_match: match,
