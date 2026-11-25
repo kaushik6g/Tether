@@ -8,6 +8,10 @@ import { Action, Field, Problem } from '@/components/feature-ui';
 import { createInvite, errorMessage, listActiveInvites, profileName, revokeInvite, type ActiveInvite } from '@/features/api';
 import { inviteLink, sharedInviteToken } from '@/features/invites';
 
+const expiryTime = new Intl.DateTimeFormat(undefined, {
+  month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+});
+
 export default function InvitationsScreen() {
   const colors = useAccountColors();
   const router = useRouter();
@@ -116,7 +120,7 @@ export default function InvitationsScreen() {
       {invites?.map((invite) => (
         <View key={invite.token} style={[styles.invite, { borderColor: colors.border }]}>
           <Text style={{ color: colors.secondary }}>
-            Expires {new Date(invite.expires_at).toLocaleDateString()}
+            Expires {expiryTime.format(new Date(invite.expires_at))}
           </Text>
           <Action title={'View invitation ending in ' + invite.token.slice(-4)}
             disabled={busy || selected === invite.token} onPress={() => { setSelected(invite.token); setConfirmRevoke(''); }} />
