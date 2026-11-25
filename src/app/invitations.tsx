@@ -14,6 +14,7 @@ export default function InvitationsScreen() {
   const [invites, setInvites] = useState<ActiveInvite[]>();
   const [selected, setSelected] = useState('');
   const [busy, setBusy] = useState(false);
+  const [listError, setListError] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const reload = useRef<() => void>(() => {});
@@ -28,9 +29,10 @@ export default function InvitationsScreen() {
       void listActiveInvites().then((items) => {
         if (!active || current !== sequence) return;
         setInvites(items);
+        setListError(false);
         setSelected((token) => items.some((item) => item.token === token) ? token : '');
       }).catch(() => {
-        if (active && current === sequence) setError('Could not load your invitations.');
+        if (active && current === sequence) setListError(true);
       });
     }
     reload.current = load;
@@ -115,7 +117,10 @@ export default function InvitationsScreen() {
       <Action title="Open invitation" onPress={open} disabled={!input.trim()} />
       {status ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>{status}</Text> : null}
       {error ? <Problem message={error} /> : null}
-      {!invites && error && <Action title="Reload invitations" onPress={() => reload.current()} />}
+      {listError && <>
+        <Problem message="Could not load your invitations." />
+        <Action title="Reload invitations" onPress={() => reload.current()} />
+      </>}
     </AccountPage>
   );
 }
