@@ -5,13 +5,24 @@ import { inviteToken } from '@/features/invites';
 const storageKey = 'tether.pending-circle-invite';
 const lifetimeMs = 24 * 60 * 60 * 1000;
 type PendingInvite = { token: string; email: string; expiresAt: number };
+let pendingInMemory: PendingInvite | null = null;
 
 export async function rememberInvite(token: string, email: string) {
   const entry: PendingInvite = { token, email: email.toLowerCase(), expiresAt: Date.now() + lifetimeMs };
-  await AsyncStorage.setItem(storageKey, JSON.stringify(entry));
+  pendingInMemory = entry;
+  await AsyncStorage.setItem(storageKey, JSON.stringify(entry)).catch(() => {
+    // The current session can still return to the invite without durable storage.
+  });
 }
 
 export async function readInvite(email: string): Promise<PendingInvite | null> {
+  if (pendingInMemory) {
+    if (pendingInMemory.expiresAt <= Date.now()) {
+      pendingInMemory = null;
+    } else {
+      return pendingInMemory.email === email.toLowerCase() ? pendingInMemory : null;
+    }
+  }
   const stored = await AsyncStorage.getItem(storageKey);
   if (!stored) return null;
   let entry: Partial<PendingInvite> | null;
@@ -29,6 +40,7 @@ export async function readInvite(email: string): Promise<PendingInvite | null> {
 }
 
 export async function forgetInvite(entry: PendingInvite) {
+  if (pendingInMemory === entry) pendingInMemory = null;
   if (await AsyncStorage.getItem(storageKey) === JSON.stringify(entry)) {
     await AsyncStorage.removeItem(storageKey);
   }
