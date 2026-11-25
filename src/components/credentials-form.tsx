@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { isAccountEmail } from '@/auth/email';
 import { rememberInvite } from '@/auth/pending-invite';
 import { inviteToken } from '@/features/invites';
+import { AccountUnavailable } from '@/components/account-unavailable';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { supabase } from '@/lib/supabase';
 
@@ -110,7 +111,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       {error ? <Text accessibilityRole="alert" style={{ color: colors.error }}>{error}</Text> : null}
       {notice ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>{notice}</Text> : null}
       {!create && <Link href={{ pathname: '/forgot-password', params: invite ? { invite } : {} }} style={[accountStyles.link, { color: colors.text }]}>Forgot password?</Link>}
-      {!supabase && <Text style={{ color: colors.secondary }}>Account access is unavailable.</Text>}
+      <AccountUnavailable />
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ disabled, busy: submitting }}

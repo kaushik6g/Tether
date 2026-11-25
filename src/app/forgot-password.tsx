@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { Text } from 'react-native';
 
 import { isAccountEmail } from '@/auth/email';
+import { AccountUnavailable } from '@/components/account-unavailable';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { ResetPasswordForm } from '@/components/reset-password-form';
@@ -49,6 +50,7 @@ export default function ForgotPasswordScreen() {
     <AccountPage>
       <Link href={{ pathname: '/sign-in', params: invite ? { invite } : {} }} replace style={[accountStyles.link, { color: colors.text }]}>Back to sign in</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Reset your password</Text>
+      <AccountUnavailable />
       {!resetEmail && <>
       <Field accessibilityLabel="Account email" placeholder="Account email" keyboardType="email-address"
         autoCapitalize="none" autoCorrect={false} editable={!busy} value={email} onChangeText={setEmail} />
