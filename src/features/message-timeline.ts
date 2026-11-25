@@ -9,7 +9,7 @@ export function mergeMessagePages(loaded: MessagePage | undefined, latest: Messa
 
   return {
     messages: [...loaded.messages.slice(0, overlap), ...latest.messages],
-    hasMore: loaded.hasMore,
+    hasMore: overlap === 0 ? latest.hasMore : loaded.hasMore,
   };
 }
 
