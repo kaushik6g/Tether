@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { PropsWithChildren } from 'react';
 
@@ -20,9 +20,11 @@ export function AccountPage({ children }: PropsWithChildren) {
   const colors = useAccountColors();
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.column}>{children}</View>
-      </ScrollView>
+      <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <View style={styles.column}>{children}</View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
