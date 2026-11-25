@@ -126,6 +126,10 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
             <Action title="Retry loading plan" disabled={refreshing} onPress={reload} />
           </>
         )}
+        {!data.failedPlans && data.failedHistory && <>
+          <Problem message="Could not load previous proposals." />
+          <Action title="Retry previous proposals" disabled={refreshing} onPress={reload} />
+        </>}
         {!match.closed_at && !!timeline?.messages.length && (
           <Action title="Jump to reply" onPress={() => scroll.current?.scrollToEnd({ animated: false })} />
         )}
