@@ -6,7 +6,7 @@ import { AccountPage, accountStyles, useAccountColors } from '@/components/accou
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { errorMessage, listMatches } from '@/features/api';
 import { listMatchPlans, suggestPlan } from '@/features/plans';
-import { localPlanFields, localTimeZone, parseLocalPlanTime } from '@/features/plan-time';
+import { formatPlanTime, localPlanFields, localTimeZone, parseLocalPlanTime } from '@/features/plan-time';
 
 export default function ProposePlanScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -54,6 +54,8 @@ function ProposalForm({ id }: { id: string }) {
     date.setDate(date.getDate() + offset);
     setDraft((current) => current ? { ...current, day: localPlanFields(date).day } : current);
   }
+
+  const preview = draft ? parseLocalPlanTime(draft.day, draft.time) : null;
 
   async function submit() {
     if (!draft || submitting.current) return;
@@ -128,6 +130,7 @@ function ProposalForm({ id }: { id: string }) {
             <Field accessibilityLabel="Note" value={draft.note} maxLength={500} editable={!busy} multiline
               onChangeText={(note) => setDraft({ ...draft, note })} />
           </View>
+          {preview && <Text style={{ color: colors.secondary }}>Proposed start: {formatPlanTime(preview.toISOString())}</Text>}
           <Action title={busy ? 'Sending proposal' : 'Send proposal'} disabled={busy} onPress={submit} />
         </>
       )}
