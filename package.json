@@ -48,6 +48,7 @@
     "typecheck": "tsc --noEmit",
     "check:release-env": "node scripts/check-release-env.mjs",
     "build:web": "expo export --platform web",
+    "build:android": "expo export --platform android --output-dir dist/android",
     "check": "npm run lint && npm run typecheck"
   },
   "private": true
