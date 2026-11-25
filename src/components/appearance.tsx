@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { useColorScheme } from 'react-native';
 
 export type Appearance = 'system' | 'light' | 'dark';
@@ -12,19 +12,27 @@ const AppearanceContext = createContext<{
 export function AppearanceProvider({ children }: PropsWithChildren) {
   const system = useColorScheme();
   const [preference, setPreference] = useState<Appearance>('system');
+  const saveRevision = useRef(0);
+  const writes = useRef(Promise.resolve());
   useEffect(() => {
     let active = true;
+    const revision = saveRevision.current;
     void AsyncStorage.getItem(key).then((value) => {
-      if (active && (value === 'light' || value === 'dark')) {
-        setPreference((current) => current === 'system' ? value : current);
+      if (active && revision === saveRevision.current && (value === 'light' || value === 'dark')) {
+        setPreference(value);
       }
     }).catch(() => {});
     return () => { active = false; };
   }, []);
 
   async function save(value: Appearance) {
-    await AsyncStorage.setItem(key, value);
-    setPreference(value);
+    saveRevision.current++;
+    const write = writes.current.then(async () => {
+      await AsyncStorage.setItem(key, value);
+      setPreference(value);
+    });
+    writes.current = write.catch(() => {});
+    await write;
   }
 
   const dark = preference === 'system' ? system === 'dark' : preference === 'dark';
