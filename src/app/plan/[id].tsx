@@ -111,6 +111,12 @@ function ProposalForm({ id }: { id: string }) {
             <Text style={{ color: colors.text }}>Duration in minutes</Text>
             <Field accessibilityLabel="Duration in minutes" keyboardType="number-pad" value={draft.duration}
               maxLength={3} editable={!busy} onChangeText={(duration) => setDraft({ ...draft, duration })} />
+            <View style={styles.quickChoices}>
+              {[30, 60, 90].map((minutes) => (
+                <Action key={minutes} title={minutes + ' min'} disabled={busy || draft.duration === String(minutes)}
+                  onPress={() => setDraft({ ...draft, duration: String(minutes) })} />
+              ))}
+            </View>
           </View>
           <View style={styles.field}>
             <Text style={{ color: colors.text }}>Place (optional)</Text>
