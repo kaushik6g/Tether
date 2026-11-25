@@ -20,16 +20,16 @@ const messageTime = new Intl.DateTimeFormat(undefined, {
 });
 
 export default function ChatScreen() {
-  const params = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string; archive?: string }>();
   const colors = useAccountColors();
   const id = catchupId(params.id);
   if (!id) {
     return <AccountPage><Text style={{ color: colors.text }}>This conversation is unavailable.</Text></AccountPage>;
   }
-  return <Chat key={id} id={id} />;
+  return <Chat key={id} id={id} fromArchive={params.archive === '1'} />;
 }
 
-function Chat({ id }: { id: string }) {
+function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
   const colors = useAccountColors();
   const userId = useSession().session?.user.id;
   const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
@@ -99,7 +99,7 @@ function Chat({ id }: { id: string }) {
   const match = data?.match;
   return (
     <AccountPage scrollRef={scroll}>
-      <Link href="/matches" replace style={[accountStyles.link, { color: colors.secondary }]}>Catch-ups</Link>
+      <Link href={{ pathname: '/matches', params: fromArchive ? { archive: '1' } : {} }} replace style={[accountStyles.link, { color: colors.secondary }]}>Catch-ups</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>
         {match?.display_name ?? 'Catch-up'}
       </Text>

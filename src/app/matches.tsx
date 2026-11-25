@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -12,7 +12,9 @@ const inboxDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'num
 export default function MatchesScreen() {
   const colors = useAccountColors();
   const [query, setQuery] = useState('');
-  const [archived, setArchived] = useState(false);
+  const router = useRouter();
+  const { archive } = useLocalSearchParams<{ archive?: string }>();
+  const archived = archive === '1';
   const { data, error, reload } = useMatchFeed('catch-up-inbox', undefined, listMatches);
 
   const category = data?.filter((match) => !!match.closed_at === archived);
@@ -28,7 +30,7 @@ export default function MatchesScreen() {
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Catch-ups</Text>
       <Link href="/upcoming" style={[accountStyles.link, { color: colors.text }]}>Upcoming plans</Link>
       {data === undefined && !error && <Text style={{ color: colors.secondary }}>Loading catch-ups…</Text>}
-      <Action title={archived ? 'Show open catch-ups' : 'Show archived catch-ups'} onPress={() => setArchived(!archived)} />
+      <Action title={archived ? 'Show open catch-ups' : 'Show archived catch-ups'} onPress={() => router.setParams({ archive: archived ? '0' : '1' })} />
       <Text accessibilityRole="header" style={[accountStyles.copy, { color: colors.text }]}>
         {archived ? 'Archived catch-ups' : 'Open catch-ups'}
       </Text>
@@ -42,7 +44,7 @@ export default function MatchesScreen() {
       </Text>}
       {visible?.map((match) => (
         <View key={match.id} style={[styles.item, { borderColor: colors.border }]}>
-          <Link href={{ pathname: '/chat/[id]', params: { id: match.id } }}
+          <Link href={{ pathname: '/chat/[id]', params: { id: match.id, ...(archived && { archive: '1' }) } }}
             style={[accountStyles.link, { color: colors.text }]}>{match.display_name}</Link>
           <Text style={{ color: colors.secondary }}>
             {match.closed_at ? 'Closed' : 'Opened'} {inboxDate.format(new Date(match.closed_at ?? match.created_at))}
