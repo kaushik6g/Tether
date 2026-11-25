@@ -153,7 +153,8 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
         })}
         {match.closed_at ? <Text style={{ color: colors.secondary }}>{match.closed_reason || data.failedPlans || data.plans.length > 0 ? 'This chat is closed.' : 'Plan made.'}</Text> : <>
           <Field accessibilityLabel="Message" placeholder="Suggest a time or send a reply"
-            maxLength={replyLimit} editable={!busy} value={draft} onChangeText={setDraft} multiline />
+            maxLength={replyLimit} editable={!busy} value={draft} onChangeText={setDraft}
+            style={styles.composer} multiline />
           {draft.length >= replyLimit - 100 && (
             <Text style={{ color: colors.secondary }}>{replyLimit - draft.length} characters left</Text>
           )}
@@ -178,6 +179,7 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
 }
 
 const styles = StyleSheet.create({
+  composer: { minHeight: 96, maxHeight: 240, paddingVertical: 10, textAlignVertical: 'top' },
   messageHeader: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 6 },
   message: { borderWidth: 1, borderRadius: 10, gap: 4, padding: 12 },
 });
