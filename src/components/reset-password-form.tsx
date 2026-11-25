@@ -56,7 +56,18 @@ export function ResetPasswordForm({ email, onRestart }: { email: string; onResta
 
       const { error } = await recovery.auth.updateUser({ password });
       if (error) {
-        setProblem(error.message);
+        if (error.code === 'session_not_found' || error.code === 'session_expired' || error.status === 401) {
+          client.current = null;
+          setVerified(false);
+          void recovery.auth.signOut({ scope: 'local' }).catch(() => {});
+          setProblem('Your reset session expired. Request a new code and try again.');
+        } else if (error.code === 'same_password') {
+          setProblem('Choose a password different from your current one.');
+        } else if (error.code === 'weak_password') {
+          setProblem('Choose a longer password that is harder to guess.');
+        } else {
+          setProblem('Could not update your password. Try again.');
+        }
         return;
       }
       setPassword('');
