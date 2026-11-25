@@ -106,7 +106,7 @@ function Chat({ id }: { id: string }) {
       {!data && !error && <Text style={{ color: colors.secondary }}>Opening conversation…</Text>}
       {data && !match && <Problem message="This conversation is unavailable." />}
       {match && <>
-        <ChatPlan matchId={id} plans={data.plans} history={data.history} userId={userId} closed={!!match.closed_at} reload={reload} />
+        <ChatPlan matchId={id} plans={data.plans} history={data.history} userId={userId} closed={!!match.closed_at} stale={error} reload={reload} />
         {!match.closed_at && !!timeline?.messages.length && (
           <Action title="Jump to reply" onPress={() => scroll.current?.scrollToEnd({ animated: false })} />
         )}

@@ -26,12 +26,13 @@ export function PlanDetails({ plan }: { plan: CatchupPlan }) {
   );
 }
 
-export function ChatPlan({ matchId, plans, history, userId, closed, reload }: {
+export function ChatPlan({ matchId, plans, history, userId, closed, stale, reload }: {
   matchId: string;
   plans: CatchupPlan[];
   history: CatchupPlan[];
   userId: string | undefined;
   closed: boolean;
+  stale: boolean;
   reload: () => void;
 }) {
   const colors = useAccountColors();
@@ -59,7 +60,7 @@ export function ChatPlan({ matchId, plans, history, userId, closed, reload }: {
   }, [startsAt]);
 
   async function respond(decision: 'accept' | 'declined' | 'withdrawn' | 'cancel') {
-    if (!plan || !userId || updating.current || (decision !== 'cancel' && closed)) return;
+    if (!plan || !userId || stale || updating.current || (decision !== 'cancel' && closed)) return;
     updating.current = true;
     setBusy(true);
     setProblem('');
@@ -96,7 +97,7 @@ export function ChatPlan({ matchId, plans, history, userId, closed, reload }: {
         confirmCancellation ? (
           <>
             <Text style={{ color: colors.secondary }}>This cancels the plan for both of you. Calendar copies can be removed from your calendar.</Text>
-            <Action title="Confirm cancellation" disabled={busy} onPress={() => respond('cancel')} />
+            <Action title="Confirm cancellation" disabled={busy || stale} onPress={() => respond('cancel')} />
             <Action title="Keep the plan" disabled={busy} onPress={() => setConfirmCancellation(false)} />
           </>
         ) : (
@@ -107,11 +108,11 @@ export function ChatPlan({ matchId, plans, history, userId, closed, reload }: {
       {proposed && own && <Action title="Withdraw proposal" disabled={busy} onPress={() => respond('withdrawn')} />}
       {proposed && !own && (
         <>
-          <Action title="Accept plan" disabled={busy || expired} onPress={() => respond('accept')} />
+          <Action title="Accept plan" disabled={busy || expired || stale} onPress={() => respond('accept')} />
           <Action title="Decline proposal" disabled={busy} onPress={() => respond('declined')} />
         </>
       )}
-      {!closed && !busy && <Link href={{ pathname: '/plan/[id]', params: { id: matchId } }}
+      {!closed && !busy && !stale && <Link href={{ pathname: '/plan/[id]', params: { id: matchId } }}
         style={[accountStyles.link, { color: colors.text }]}>
         {proposed ? 'Suggest another plan' : 'Suggest a plan'}
       </Link>}
