@@ -9,7 +9,7 @@ import { listBlockedFriends, unblockFriend, type Friend } from '@/features/api';
 export default function PrivacyScreen() {
   const colors = useAccountColors();
   const updating = useRef(false);
-  const [loadAttempt, setLoadAttempt] = useState(0);
+  const reload = useRef<() => void>(() => {});
   const [blocked, setBlocked] = useState<Friend[]>();
   const [confirm, setConfirm] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -17,14 +17,20 @@ export default function PrivacyScreen() {
 
   useFocusEffect(useCallback(() => {
     let active = true;
-    setError('');
-    void listBlockedFriends().then((friends) => {
-      if (active) setBlocked(friends);
-    }).catch(() => {
-      if (active) setError('Could not load blocked people.');
-    });
-    return () => { active = false; };
-  }, [loadAttempt]));
+    let generation = 0;
+    function load() {
+      const request = ++generation;
+      setError('');
+      void listBlockedFriends().then((friends) => {
+        if (active && request === generation) setBlocked(friends);
+      }).catch(() => {
+        if (active && request === generation) setError('Could not load blocked people.');
+      });
+    }
+    reload.current = load;
+    load();
+    return () => { active = false; reload.current = () => {}; };
+  }, []));
 
   async function unblock(id: string) {
     if (updating.current) return;
@@ -35,6 +41,7 @@ export default function PrivacyScreen() {
       await unblockFriend(id);
       setConfirm(undefined);
       setBlocked((friends) => friends?.filter((friend) => friend.friend_id !== id));
+      reload.current();
     } catch {
       setError('Could not unblock this person. Try again.');
     } finally {
@@ -70,7 +77,7 @@ export default function PrivacyScreen() {
       ))}
       <Link href="/delete-account" style={[accountStyles.link, { color: colors.error }]}>Delete account</Link>
       {error ? <Problem message={error} /> : null}
-      {error && !busy && <Action title="Reload blocked people" onPress={() => setLoadAttempt((attempt) => attempt + 1)} />}
+      {error && !busy && <Action title="Reload blocked people" onPress={() => reload.current()} />}
     </AccountPage>
   );
 }
