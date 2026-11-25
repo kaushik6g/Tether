@@ -37,7 +37,8 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
   const submitting = useRef(false);
   const attempt = useRef<{ body: string; requestId: string } | undefined>(undefined);
   const [confirmClose, setConfirmClose] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [operation, setOperation] = useState<'send' | 'close'>();
+  const busy = !!operation;
   const [problem, setProblem] = useState('');
   const loading = useRef(false);
   const [loaded, setLoaded] = useState<MessagePage>();
@@ -74,7 +75,7 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
     const body = draft.trim();
     if (submitting.current || !data?.match || data.match.closed_at || (!close && !body)) return;
     submitting.current = true;
-    setBusy(true);
+    setOperation(close ? 'close' : 'send');
     setProblem('');
     try {
       if (close) {
@@ -92,7 +93,7 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
       reload();
     } finally {
       submitting.current = false;
-      setBusy(false);
+      setOperation(undefined);
     }
   }
 
@@ -135,11 +136,11 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
             <Text style={{ color: colors.secondary }}>{replyLimit - draft.length} characters left</Text>
           )}
           {problem ? <Problem message={problem} /> : null}
-          <Action title="Send reply" onPress={() => void update(false)} disabled={busy || !draft.trim()} />
+          <Action title={operation === 'send' ? 'Sending reply' : 'Send reply'} onPress={() => void update(false)} disabled={busy || !draft.trim()} />
           {confirmClose ? (
             <>
               <Text style={{ color: colors.secondary }}>This closes the chat to new replies for both friends.</Text>
-              <Action title="Confirm plan was made" onPress={() => void update(true)} disabled={busy} />
+              <Action title={operation === 'close' ? 'Closing chat' : 'Confirm plan was made'} onPress={() => void update(true)} disabled={busy} />
               <Action title="Keep chat open" onPress={() => setConfirmClose(false)} disabled={busy} />
             </>
           ) : (
