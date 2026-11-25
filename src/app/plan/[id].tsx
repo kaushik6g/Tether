@@ -49,6 +49,12 @@ function ProposalForm({ id }: { id: string }) {
     return () => { active = false; };
   }, [id]);
 
+  function chooseDay(offset: number) {
+    const date = new Date();
+    date.setDate(date.getDate() + offset);
+    setDraft((current) => current ? { ...current, day: localPlanFields(date).day } : current);
+  }
+
   async function submit() {
     if (!draft || submitting.current) return;
     const startsAt = parseLocalPlanTime(draft.day, draft.time);
@@ -87,6 +93,10 @@ function ProposalForm({ id }: { id: string }) {
       {draft && (
         <>
           <Text style={{ color: colors.secondary }}>Your time zone is {localTimeZone()}.</Text>
+          <View style={styles.quickChoices}>
+            <Action title="Today" disabled={busy} onPress={() => chooseDay(0)} />
+            <Action title="Tomorrow" disabled={busy} onPress={() => chooseDay(1)} />
+          </View>
           <View style={styles.field}>
             <Text style={{ color: colors.text }}>Date (YYYY-MM-DD)</Text>
             <Field accessibilityLabel="Date, year month day" value={draft.day} maxLength={10} editable={!busy}
@@ -120,4 +130,7 @@ function ProposalForm({ id }: { id: string }) {
   );
 }
 
-const styles = StyleSheet.create({ field: { gap: 6 } });
+const styles = StyleSheet.create({
+  field: { gap: 6 },
+  quickChoices: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+});
