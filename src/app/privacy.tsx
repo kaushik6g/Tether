@@ -9,6 +9,7 @@ import { listBlockedFriends, unblockFriend, type Friend } from '@/features/api';
 export default function PrivacyScreen() {
   const colors = useAccountColors();
   const updating = useRef(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [blocked, setBlocked] = useState<Friend[]>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -19,10 +20,10 @@ export default function PrivacyScreen() {
     void listBlockedFriends().then((friends) => {
       if (active) setBlocked(friends);
     }).catch(() => {
-      if (active) setError('Could not load blocked people. Reopen this screen to try again.');
+      if (active) setError('Could not load blocked people.');
     });
     return () => { active = false; };
-  }, []));
+  }, [loadAttempt]));
 
   async function unblock(id: string) {
     if (updating.current) return;
@@ -60,6 +61,7 @@ export default function PrivacyScreen() {
       ))}
       <Link href="/delete-account" style={[accountStyles.link, { color: colors.error }]}>Delete account</Link>
       {error ? <Problem message={error} /> : null}
+      {error && !busy && <Action title="Reload blocked people" onPress={() => setLoadAttempt((attempt) => attempt + 1)} />}
     </AccountPage>
   );
 }
