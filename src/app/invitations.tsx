@@ -30,6 +30,9 @@ export default function InvitationsScreen() {
   const saving = useRef(false);
   const mutation = useRef(0);
   const link = selected ? inviteLink(selected) : null;
+  const shareMessage = link
+    ? 'I’d like to add you to my Tether circle. ' + link
+    : 'I’d like to add you to my Tether circle. Enter this in Invitations: ' + selected;
 
   useFocusEffect(useCallback(() => {
     let sequence = 0;
@@ -88,11 +91,7 @@ export default function InvitationsScreen() {
         await navigator.clipboard.writeText(value);
         setStatus(link ? 'Invitation link copied.' : 'Invitation code copied.');
       } else {
-        await Share.share({
-          message: link
-            ? 'I’d like to add you to my Tether circle. ' + link
-            : 'I’d like to add you to my Tether circle. Enter this in Invitations: ' + value,
-        });
+        await Share.share({ message: shareMessage });
       }
     } catch {
       setError('Select the invitation text above to copy it.');
@@ -130,7 +129,8 @@ export default function InvitationsScreen() {
         <>
           <Text selectable accessibilityLabel={link ? 'Invitation link' : 'Invitation code'}
             style={[accountStyles.copy, { color: colors.text }]}>{link ?? selected}</Text>
-          <Action title={Platform.OS === 'web' ? 'Copy invitation' : 'Share invitation'} onPress={share} />
+          {Platform.OS !== 'web' && <Text style={{ color: colors.secondary }}>{shareMessage}</Text>}
+          <Action title={Platform.OS === 'web' ? 'Copy invitation' : 'Share invitation'} disabled={busy} onPress={share} />
           {confirmRevoke === selected ? (
             <>
               <Text style={{ color: colors.secondary }}>After revoking this invitation, your friend will need a new link.</Text>
