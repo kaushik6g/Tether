@@ -46,7 +46,7 @@ export default function NotificationsScreen() {
 
   return (
     <AccountPage>
-      <Link href="/circle" replace style={[accountStyles.link, { color: colors.secondary }]}>Your circle</Link>
+      <Link href="/settings" replace style={[accountStyles.link, { color: colors.secondary }]}>Settings</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Match notifications</Text>
       <Text style={[accountStyles.copy, { color: colors.secondary }]}>
         Get an alert on this device when you and a friend both want to catch up.

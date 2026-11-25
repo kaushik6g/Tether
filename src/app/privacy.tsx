@@ -52,7 +52,7 @@ export default function PrivacyScreen() {
 
   return (
     <AccountPage>
-      <Link href="/circle" replace style={[accountStyles.link, { color: colors.secondary }]}>Your circle</Link>
+      <Link href="/settings" replace style={[accountStyles.link, { color: colors.secondary }]}>Settings</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Privacy</Text>
       <Text accessibilityRole="header" style={[styles.section, { color: colors.text }]}>Blocked people</Text>
       {blocked === undefined && !error && <Text style={{ color: colors.secondary }}>Loading.</Text>}

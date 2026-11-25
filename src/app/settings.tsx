@@ -40,7 +40,7 @@ export default function SettingsScreen() {
       <Link href="/circle" replace style={linkStyle}>Your circle</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Settings</Text>
       {user?.email && <Text selectable style={[accountStyles.copy, { color: colors.secondary }]}>Signed in as {user.email}</Text>}
-      <Link href="/profile" style={linkStyle}>Display name</Link>
+      <Link href={{ pathname: '/profile', params: { from: 'settings' } }} style={linkStyle}>Display name</Link>
       <Link href="/privacy" style={linkStyle}>Privacy</Link>
       {matchPushAvailable && <Link href="/notifications" style={linkStyle}>Match notifications</Link>}
       {confirm ? (

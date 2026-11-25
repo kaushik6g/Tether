@@ -11,8 +11,9 @@ import { inviteToken } from '@/features/invites';
 export default function ProfileScreen() {
   const colors = useAccountColors();
   const router = useRouter();
-  const params = useLocalSearchParams<{ invite?: string }>();
+  const params = useLocalSearchParams<{ invite?: string; from?: string }>();
   const invite = typeof params.invite === 'string' ? inviteToken(params.invite) : null;
+  const fromSettings = params.from === 'settings';
   const userId = useSession().session?.user.id;
   const [name, setName] = useState('');
   const [loadAttempt, setLoadAttempt] = useState(0);
@@ -54,11 +55,11 @@ export default function ProfileScreen() {
   return (
     <AccountPage>
       <Link
-        href={invite ? { pathname: '/invite/[token]', params: { token: invite } } : '/circle'}
+        href={invite ? { pathname: '/invite/[token]', params: { token: invite } } : fromSettings ? '/settings' : '/circle'}
         replace
         style={[accountStyles.link, { color: colors.secondary }]}
       >
-        {invite ? 'Back to invitation' : 'Your circle'}
+        {invite ? 'Back to invitation' : fromSettings ? 'Settings' : 'Your circle'}
       </Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Your name</Text>
       <Text style={[accountStyles.copy, { color: colors.secondary }]}>Friends see this name on your invites and in their circles.</Text>
