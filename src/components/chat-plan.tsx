@@ -15,10 +15,11 @@ const outcomes: Partial<Record<CatchupPlan['status'], string>> = {
 
 export function PlanDetails({ plan }: { plan: CatchupPlan }) {
   const colors = useAccountColors();
+  const endsAt = new Date(new Date(plan.starts_at).getTime() + plan.duration_minutes * 60_000);
   return (
     <View style={styles.details}>
-      <Text style={[accountStyles.copy, { color: colors.text }]}>{formatPlanTime(plan.starts_at)}</Text>
-      <Text style={{ color: colors.secondary }}>{plan.duration_minutes} minutes</Text>
+      <Text style={[accountStyles.copy, { color: colors.text }]}>Starts {formatPlanTime(plan.starts_at)}</Text>
+      <Text style={{ color: colors.secondary }}>Ends {formatPlanTime(endsAt.toISOString())} · {plan.duration_minutes} minutes</Text>
       {plan.place ? <Text style={{ color: colors.text }}>{plan.place}</Text> : null}
       {plan.note ? <Text style={{ color: colors.secondary }}>{plan.note}</Text> : null}
     </View>
