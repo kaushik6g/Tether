@@ -3,16 +3,19 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
-import { Action, Problem } from '@/components/feature-ui';
+import { Action, Field, Problem } from '@/components/feature-ui';
 import { listMatches } from '@/features/api';
 import { useMatchFeed } from '@/features/use-match-feed';
 
 export default function MatchesScreen() {
   const colors = useAccountColors();
+  const [query, setQuery] = useState('');
   const [archived, setArchived] = useState(false);
   const { data, error, reload } = useMatchFeed('catch-up-inbox', undefined, listMatches);
 
-  const visible = data?.filter((match) => !!match.closed_at === archived);
+  const category = data?.filter((match) => !!match.closed_at === archived);
+  const term = query.trim().toLocaleLowerCase();
+  const visible = category?.filter((match) => match.display_name.toLocaleLowerCase().includes(term));
 
   return (
     <AccountPage>
@@ -24,7 +27,12 @@ export default function MatchesScreen() {
       <Text accessibilityRole="header" style={[accountStyles.copy, { color: colors.text }]}>
         {archived ? 'Archived catch-ups' : 'Open catch-ups'}
       </Text>
-      {visible?.length === 0 && <Text style={{ color: colors.secondary }}>
+      {!!category?.length && (
+        <Field accessibilityLabel="Search catch-ups by name" placeholder="Search by name"
+          value={query} onChangeText={setQuery} autoCorrect={false} />
+      )}
+      {!!category?.length && visible?.length === 0 && <Text style={{ color: colors.secondary }}>No catch-ups match your search.</Text>}
+      {category?.length === 0 && <Text style={{ color: colors.secondary }}>
         {archived ? 'No archived catch-ups yet.' : 'A chat opens when you and a friend both tap.'}
       </Text>}
       {visible?.map((match) => (
