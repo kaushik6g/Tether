@@ -25,3 +25,10 @@ function configureSupabase() {
 }
 
 export const supabase = configureSupabase();
+
+export function createRecoveryClient() {
+  if (!url || !supabase || !key) return null;
+  return createClient(url, key, {
+    auth: { storageKey: 'tether-recovery', autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
+  });
+}
