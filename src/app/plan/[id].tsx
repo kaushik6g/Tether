@@ -17,6 +17,8 @@ function ProposalForm({ id }: { id: string }) {
   const colors = useAccountColors();
   const router = useRouter();
   const submitting = useRef(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [draft, setDraft] = useState<{ day: string; time: string; duration: string; place: string; note: string }>();
   const [expected, setExpected] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -44,10 +46,13 @@ function ProposalForm({ id }: { id: string }) {
         note: pending?.note ?? '',
       });
     }).catch(() => {
-      if (active) setError('Could not open this catch-up. Reopen the chat and try again.');
+      if (active) {
+        setLoadFailed(true);
+        setError('Could not open this catch-up.');
+      }
     });
     return () => { active = false; };
-  }, [id]);
+  }, [id, loadAttempt]);
 
   function chooseDay(offset: number) {
     const date = new Date();
@@ -135,6 +140,11 @@ function ProposalForm({ id }: { id: string }) {
         </>
       )}
       {error ? <Problem message={error} /> : null}
+      {loadFailed && <Action title="Retry loading proposal" onPress={() => {
+        setLoadFailed(false);
+        setError('');
+        setLoadAttempt((attempt) => attempt + 1);
+      }} />}
     </AccountPage>
   );
 }
