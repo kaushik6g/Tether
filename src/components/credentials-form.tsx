@@ -23,13 +23,13 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+  const [confirmationEmail, setConfirmationEmail] = useState('');
 
   async function submit() {
-    if (!supabase || requestInFlight.current) return;
+    if (!supabase || requestInFlight.current || confirmationEmail) return;
     const address = email.trim();
     setError('');
-    setNotice('');
+    setConfirmationEmail('');
 
     if (!isAccountEmail(address)) {
       setError('Enter a valid email address.');
@@ -49,7 +49,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         const { data, error: failure } = await supabase.auth.signUp(credentials);
         if (failure) setError(signUpProblem(failure));
         else if (!data.session) {
-          setNotice('Check your email for a confirmation link, then return here to sign in.');
+          setConfirmationEmail(address);
           setPassword('');
         }
       } else {
@@ -64,7 +64,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     }
   }
 
-  const disabled = submitting || !supabase;
+  const disabled = submitting || !supabase || !!confirmationEmail;
   const inputStyle = [styles.input, { borderColor: colors.border, color: colors.text }];
 
   return (
@@ -82,7 +82,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
           autoCorrect={false}
           editable={!submitting}
           keyboardType="email-address"
-          onChangeText={setEmail}
+          onChangeText={(value) => { setEmail(value); setConfirmationEmail(''); }}
           onSubmitEditing={() => passwordInput.current?.focus()}
           returnKeyType="next"
           style={inputStyle}
@@ -110,7 +110,9 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         <Text style={[accountStyles.link, { color: colors.text }]}>{showPassword ? 'Hide password' : 'Show password'}</Text>
       </Pressable>
       {error ? <Text accessibilityRole="alert" style={{ color: colors.error }}>{error}</Text> : null}
-      {notice ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>{notice}</Text> : null}
+      {confirmationEmail ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>
+        Check {confirmationEmail} for a confirmation link, then sign in.
+      </Text> : null}
       {!create && <Link href={{ pathname: '/forgot-password', params: invite ? { invite } : {} }} style={[accountStyles.link, { color: colors.text }]}>Forgot password?</Link>}
       <AccountUnavailable />
       <Pressable
