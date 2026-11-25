@@ -15,9 +15,8 @@ import { useMatchFeed } from '@/features/use-match-feed';
 
 const replyLimit = 1000;
 
-const messageTime = new Intl.DateTimeFormat(undefined, {
-  month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-});
+const messageDay = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+const messageTime = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
 
 export default function ChatScreen() {
   const params = useLocalSearchParams<{ id: string; archive?: string }>();
@@ -139,15 +138,22 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
         )}
         {timeline && !timeline.hasMore && <Text style={{ color: colors.secondary }}>Beginning of conversation</Text>}
         {olderError ? <Problem message={olderError} /> : null}
-        {timeline?.messages.map((message) => {
+        {timeline?.messages.map((message, index, messages) => {
+          const day = messageDay.format(new Date(message.created_at));
+          const previous = messages[index - 1];
+          const firstOfDay = !previous || messageDay.format(new Date(previous.created_at)) !== day;
+
           const sender = !message.sender_id ? 'Tether' : message.sender_id === userId ? 'You' : match.display_name;
           return (
-            <View key={message.id} style={[styles.message, { borderColor: colors.border }]}>
-              <View style={styles.messageHeader}>
-                <Text style={{ color: colors.secondary, fontWeight: '600' }}>{sender}</Text>
-                <Text style={{ color: colors.secondary }}>{messageTime.format(new Date(message.created_at))}</Text>
+            <View key={message.id} style={styles.messageGroup}>
+              {firstOfDay && <Text accessibilityRole="header" style={{ color: colors.secondary }}>{day}</Text>}
+              <View style={[styles.message, { borderColor: colors.border }]}>
+                <View style={styles.messageHeader}>
+                  <Text style={{ color: colors.secondary, fontWeight: '600' }}>{sender}</Text>
+                  <Text style={{ color: colors.secondary }}>{messageTime.format(new Date(message.created_at))}</Text>
+                </View>
+                <Text selectable style={[accountStyles.copy, { color: colors.text }]}>{message.body}</Text>
               </View>
-              <Text selectable style={[accountStyles.copy, { color: colors.text }]}>{message.body}</Text>
             </View>
           );
         })}
@@ -180,6 +186,7 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
 
 const styles = StyleSheet.create({
   composer: { minHeight: 96, maxHeight: 240, paddingVertical: 10, textAlignVertical: 'top' },
+  messageGroup: { gap: 8 },
   messageHeader: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 6 },
   message: { borderWidth: 1, borderRadius: 10, gap: 4, padding: 12 },
 });
