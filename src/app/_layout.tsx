@@ -23,17 +23,22 @@ function AccountRoutes() {
   const colors = useAccountColors();
   const { dark } = useAppearance();
 
+  const statusBar = <StatusBar style={dark ? 'light' : 'dark'} />;
+
   if (!ready) {
     return (
-      <AccountPage>
-        <ActivityIndicator accessibilityLabel="Loading your account" color={colors.text} />
-      </AccountPage>
+      <>
+        {statusBar}
+        <AccountPage>
+          <ActivityIndicator accessibilityLabel="Loading your account" color={colors.text} />
+        </AccountPage>
+      </>
     );
   }
 
   return (
     <>
-      <StatusBar style={dark ? 'light' : 'dark'} />
+      {statusBar}
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
         <Stack.Protected guard={!session}>
           <Stack.Screen name="index" />
