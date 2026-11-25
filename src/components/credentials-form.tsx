@@ -2,6 +2,7 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { isAccountEmail } from '@/auth/email';
 import { rememberInvite } from '@/auth/pending-invite';
 import { inviteToken } from '@/features/invites';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
@@ -27,7 +28,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     setError('');
     setNotice('');
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) {
+    if (!isAccountEmail(address)) {
       setError('Enter a valid email address.');
       return;
     }

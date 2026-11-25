@@ -2,6 +2,7 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Text } from 'react-native';
 
+import { isAccountEmail } from '@/auth/email';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { ResetPasswordForm } from '@/components/reset-password-form';
@@ -23,6 +24,10 @@ export default function ForgotPasswordScreen() {
     if (sending.current || !supabase) return;
     setNotice(false);
     setProblem('');
+    if (!isAccountEmail(email.trim())) {
+      setProblem('Enter a valid account email.');
+      return;
+    }
     sending.current = true;
     setBusy(true);
     try {
@@ -47,7 +52,7 @@ export default function ForgotPasswordScreen() {
       <Field accessibilityLabel="Account email" placeholder="Account email" keyboardType="email-address"
         autoCapitalize="none" autoCorrect={false} editable={!busy} value={email} onChangeText={setEmail} />
       <Action title={busy ? 'Requesting code' : 'Email a reset code'} disabled={!supabase || busy || !email.trim()} onPress={request} />
-      <Action title="I have a reset code" disabled={busy || !supabase || !email.trim()}
+      <Action title="I have a reset code" disabled={busy || !supabase || !isAccountEmail(email.trim())}
         onPress={() => setResetEmail(email.trim())} />
       {resetEmail && <ResetPasswordForm key={resetEmail} email={resetEmail} />}
       {notice && <Text accessibilityRole="alert" style={{ color: colors.text }}>If an account exists for that email, you’ll receive a reset code.</Text>}
