@@ -20,8 +20,8 @@ export function PlanDetails({ plan }: { plan: CatchupPlan }) {
     <View style={styles.details}>
       <Text style={[accountStyles.copy, { color: colors.text }]}>Starts {formatPlanTime(plan.starts_at)}</Text>
       <Text style={{ color: colors.secondary }}>Ends {formatPlanTime(endsAt.toISOString())} · {plan.duration_minutes} minutes</Text>
-      {plan.place ? <Text style={{ color: colors.text }}>{plan.place}</Text> : null}
-      {plan.note ? <Text style={{ color: colors.secondary }}>{plan.note}</Text> : null}
+      {plan.place ? <Text selectable style={{ color: colors.text }}>{plan.place}</Text> : null}
+      {plan.note ? <Text selectable style={{ color: colors.secondary }}>{plan.note}</Text> : null}
     </View>
   );
 }
