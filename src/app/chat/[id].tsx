@@ -12,6 +12,10 @@ import { mergeMessagePages, prependMessages } from '@/features/message-timeline'
 import { listMatchPlans, listPlanHistory } from '@/features/plans';
 import { useMatchFeed } from '@/features/use-match-feed';
 
+const messageTime = new Intl.DateTimeFormat(undefined, {
+  month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+});
+
 export default function ChatScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const colors = useAccountColors();
@@ -105,7 +109,10 @@ function Chat({ id }: { id: string }) {
           const sender = !message.sender_id ? 'Tether' : message.sender_id === userId ? 'You' : match.display_name;
           return (
             <View key={message.id} style={[styles.message, { borderColor: colors.border }]}>
-              <Text style={{ color: colors.secondary, fontWeight: '600' }}>{sender}</Text>
+              <View style={styles.messageHeader}>
+                <Text style={{ color: colors.secondary, fontWeight: '600' }}>{sender}</Text>
+                <Text style={{ color: colors.secondary }}>{messageTime.format(new Date(message.created_at))}</Text>
+              </View>
               <Text style={[accountStyles.copy, { color: colors.text }]}>{message.body}</Text>
             </View>
           );
@@ -125,5 +132,6 @@ function Chat({ id }: { id: string }) {
 }
 
 const styles = StyleSheet.create({
+  messageHeader: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 6 },
   message: { borderWidth: 1, borderRadius: 10, gap: 4, padding: 12 },
 });
