@@ -31,6 +31,7 @@ function Chat({ id }: { id: string }) {
   const [draft, setDraft] = useState('');
   const submitting = useRef(false);
   const attempt = useRef<{ body: string; requestId: string } | undefined>(undefined);
+  const [confirmClose, setConfirmClose] = useState(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
   const loading = useRef(false);
@@ -73,6 +74,7 @@ function Chat({ id }: { id: string }) {
     try {
       if (close) {
         await closeMatch(id);
+        setConfirmClose(false);
       } else {
         if (attempt.current?.body !== body) attempt.current = { body, requestId: randomUUID() };
         await sendMessage(id, body, attempt.current.requestId);
@@ -121,7 +123,15 @@ function Chat({ id }: { id: string }) {
           <Field accessibilityLabel="Message" placeholder="Suggest a time or send a reply"
             maxLength={1000} editable={!busy} value={draft} onChangeText={setDraft} multiline />
           <Action title="Send reply" onPress={() => void update(false)} disabled={busy || !draft.trim()} />
-          <Action title="Mark plan as made" onPress={() => void update(true)} disabled={busy} />
+          {confirmClose ? (
+            <>
+              <Text style={{ color: colors.secondary }}>This closes the chat to new replies for both friends.</Text>
+              <Action title="Confirm plan was made" onPress={() => void update(true)} disabled={busy} />
+              <Action title="Keep chat open" onPress={() => setConfirmClose(false)} disabled={busy} />
+            </>
+          ) : (
+            <Action title="Mark plan as made" onPress={() => setConfirmClose(true)} disabled={busy} />
+          )}
         </>}
       </>}
       {problem ? <Problem message={problem} /> : null}
