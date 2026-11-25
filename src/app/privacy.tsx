@@ -11,6 +11,7 @@ export default function PrivacyScreen() {
   const updating = useRef(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [blocked, setBlocked] = useState<Friend[]>();
+  const [confirm, setConfirm] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -32,6 +33,7 @@ export default function PrivacyScreen() {
     setError('');
     try {
       await unblockFriend(id);
+      setConfirm(undefined);
       setBlocked((friends) => friends?.filter((friend) => friend.friend_id !== id));
     } catch {
       setError('Could not unblock this person. Try again.');
@@ -56,7 +58,14 @@ export default function PrivacyScreen() {
       {blocked?.map((friend) => (
         <View key={friend.friend_id} style={[styles.row, { borderColor: colors.border }]}>
           <Text style={[accountStyles.copy, { color: colors.text }]}>{friend.display_name}</Text>
-          <Action title={'Unblock ' + friend.display_name} disabled={busy} onPress={() => unblock(friend.friend_id)} />
+          {confirm === friend.friend_id ? (
+            <>
+              <Action title={'Confirm unblocking ' + friend.display_name} disabled={busy} onPress={() => unblock(friend.friend_id)} />
+              <Action title="Keep blocked" disabled={busy} onPress={() => setConfirm(undefined)} />
+            </>
+          ) : (
+            <Action title={'Unblock ' + friend.display_name} disabled={busy} onPress={() => setConfirm(friend.friend_id)} />
+          )}
         </View>
       ))}
       <Link href="/delete-account" style={[accountStyles.link, { color: colors.error }]}>Delete account</Link>
