@@ -2,7 +2,7 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { signInProblem } from '@/auth/account-errors';
+import { signInProblem, signUpProblem } from '@/auth/account-errors';
 import { isAccountEmail } from '@/auth/email';
 import { rememberInvite } from '@/auth/pending-invite';
 import { inviteToken } from '@/features/invites';
@@ -47,7 +47,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       const credentials = { email: address, password };
       if (create) {
         const { data, error: failure } = await supabase.auth.signUp(credentials);
-        if (failure) setError(failure.message);
+        if (failure) setError(signUpProblem(failure));
         else if (!data.session) {
           setNotice('Check your email for a confirmation link, then return here to sign in.');
           setPassword('');

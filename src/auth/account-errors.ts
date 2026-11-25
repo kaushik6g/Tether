@@ -12,3 +12,17 @@ export function signInProblem(error: AuthError) {
       return 'Could not sign in. Try again in a moment.';
   }
 }
+
+export function signUpProblem(error: AuthError) {
+  switch (error.code) {
+    case 'weak_password':
+      return 'Choose a longer password that is harder to guess.';
+    case 'over_email_send_rate_limit':
+    case 'over_request_rate_limit':
+      return 'Too many requests. Wait a little before trying again.';
+    case 'email_address_invalid':
+      return 'Check your email address and try again.';
+    default:
+      return 'Could not create your account. Try again in a moment.';
+  }
+}
