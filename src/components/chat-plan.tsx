@@ -122,6 +122,9 @@ export function ChatPlan({ matchId, plans, history, userId, closed, reload }: {
           {historyVisible && history.map((entry) => (
             <View key={entry.id} style={[styles.historyItem, { borderColor: colors.border }]}>
               <Text style={[styles.title, { color: colors.text }]}>{outcomes[entry.status]}</Text>
+              <Text style={{ color: colors.secondary }}>
+                {entry.proposer_id === userId ? 'You proposed' : 'Your friend proposed'} on {formatPlanTime(entry.created_at)}
+              </Text>
               <PlanDetails plan={entry} />
             </View>
           ))}
