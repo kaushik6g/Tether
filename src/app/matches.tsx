@@ -1,4 +1,5 @@
 import { Link } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
@@ -8,7 +9,10 @@ import { useMatchFeed } from '@/features/use-match-feed';
 
 export default function MatchesScreen() {
   const colors = useAccountColors();
+  const [archived, setArchived] = useState(false);
   const { data, error, reload } = useMatchFeed('catch-up-inbox', undefined, listMatches);
+
+  const visible = data?.filter((match) => !!match.closed_at === archived);
 
   return (
     <AccountPage>
@@ -16,8 +20,14 @@ export default function MatchesScreen() {
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Catch-ups</Text>
       <Link href="/upcoming" style={[accountStyles.link, { color: colors.text }]}>Upcoming plans</Link>
       {data === undefined && !error && <Text style={{ color: colors.secondary }}>Loading catch-ups…</Text>}
-      {data?.length === 0 && <Text style={[accountStyles.copy, { color: colors.secondary }]}>A chat opens when you and a friend both tap.</Text>}
-      {data?.map((match) => (
+      <Action title={archived ? 'Show open catch-ups' : 'Show archived catch-ups'} onPress={() => setArchived(!archived)} />
+      <Text accessibilityRole="header" style={[accountStyles.copy, { color: colors.text }]}>
+        {archived ? 'Archived catch-ups' : 'Open catch-ups'}
+      </Text>
+      {visible?.length === 0 && <Text style={{ color: colors.secondary }}>
+        {archived ? 'No archived catch-ups yet.' : 'A chat opens when you and a friend both tap.'}
+      </Text>}
+      {visible?.map((match) => (
         <View key={match.id} style={[styles.item, { borderColor: colors.border }]}>
           <Link href={{ pathname: '/chat/[id]', params: { id: match.id } }}
             style={[accountStyles.link, { color: colors.text }]}>{match.display_name}</Link>
