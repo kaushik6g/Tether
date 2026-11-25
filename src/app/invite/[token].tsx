@@ -3,10 +3,12 @@ import { useCallback, useRef, useState } from 'react';
 import { Platform, Text } from 'react-native';
 
 import { useSession } from '@/auth/session';
+import { AccountUnavailable } from '@/components/account-unavailable';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Problem } from '@/components/feature-ui';
 import { acceptInvite, errorMessage, previewInvite, profileName } from '@/features/api';
 import { inviteAppLink, inviteToken } from '@/features/invites';
+import { supabase } from '@/lib/supabase';
 
 export default function InviteScreen() {
   const params = useLocalSearchParams<{ token: string }>();
@@ -31,7 +33,7 @@ function Invitation({ token }: { token: string | null }) {
   const named = profile && profile.userId === userId ? profile.named : undefined;
 
   useFocusEffect(useCallback(() => {
-    if (!token) return;
+    if (!token || !supabase) return;
     let revision = 0;
     const load = () => {
       const current = ++revision;
@@ -86,7 +88,8 @@ function Invitation({ token }: { token: string | null }) {
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>
         {inviter ? inviter + ' invited you to Tether' : 'Tether invitation'}
       </Text>
-      {token && inviter === undefined && !previewFailed ? <Text style={{ color: colors.secondary }}>Opening invitation.</Text> : null}
+      {token && <AccountUnavailable />}
+      {supabase && token && inviter === undefined && !previewFailed ? <Text style={{ color: colors.secondary }}>Opening invitation.</Text> : null}
       {!token || inviter === null ? <Text style={[accountStyles.copy, { color: colors.secondary }]}>This invitation is invalid, expired, or already used.</Text> : null}
       {inviter && token && <>
         <Text style={[accountStyles.copy, { color: colors.secondary }]}>Accept to add each other to your private circles.</Text>
