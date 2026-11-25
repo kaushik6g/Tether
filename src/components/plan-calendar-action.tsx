@@ -11,6 +11,11 @@ export function PlanCalendarAction({ plan }: { plan: CatchupPlan }) {
 
   async function add() {
     if (opening.current || plan.status !== 'confirmed') return;
+    if (new Date(plan.starts_at).getTime() <= Date.now()) {
+      setProblem('This catch-up has already started.');
+      return;
+    }
+
     opening.current = true;
     setBusy(true);
     setProblem('');
