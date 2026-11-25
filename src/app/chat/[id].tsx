@@ -49,7 +49,7 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
     const [matches, messages, plans, history] = await Promise.all([listMatches(), listMessagePage(id), listMatchPlans(id), listPlanHistory(id)]);
     return { match: matches.find((entry) => entry.id === id), messages, plans, history };
   }, [id]);
-  const { data, error, reload } = useMatchFeed('catch-up-' + id, id, load, true);
+  const { data, error, refreshing, reload } = useMatchFeed('catch-up-' + id, id, load, true);
 
   const timeline = data ? mergeMessagePages(loaded, data.messages) : undefined;
 
@@ -150,7 +150,7 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
       </>}
       {(!match || match.closed_at) && problem ? <Problem message={problem} /> : null}
       {error ? <Problem message="Could not refresh this conversation." /> : null}
-      {error && <Action title="Try again" onPress={reload} />}
+      {error && <Action title={refreshing ? 'Refreshing conversation' : 'Try again'} disabled={refreshing} onPress={reload} />}
     </AccountPage>
   );
 }
