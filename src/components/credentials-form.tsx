@@ -2,6 +2,7 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { signInProblem } from '@/auth/account-errors';
 import { isAccountEmail } from '@/auth/email';
 import { rememberInvite } from '@/auth/pending-invite';
 import { inviteToken } from '@/features/invites';
@@ -53,7 +54,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         }
       } else {
         const { error: failure } = await supabase.auth.signInWithPassword(credentials);
-        if (failure) setError(failure.message);
+        if (failure) setError(signInProblem(failure));
       }
     } catch {
       setError('Could not reach Tether. Check your connection and try again.');
