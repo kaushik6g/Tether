@@ -1,5 +1,5 @@
-import { Link } from 'expo-router';
-import { useState } from 'react';
+import { Link, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
@@ -30,6 +30,13 @@ export default function UpcomingScreen() {
 function PlansList({ recent, switchView }: { recent: boolean; switchView: () => void }) {
   const colors = useAccountColors();
   const { data, error, reload } = useMatchFeed(recent ? 'recent-plans' : 'upcoming-plans', undefined, recent ? loadRecent : loadUpcoming, true);
+
+  const refresh = useRef(reload);
+  useEffect(() => { refresh.current = reload; }, [reload]);
+  useFocusEffect(useCallback(() => {
+    const interval = setInterval(() => refresh.current(), 60_000);
+    return () => clearInterval(interval);
+  }, []));
 
   return (
     <AccountPage>
