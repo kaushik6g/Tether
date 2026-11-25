@@ -97,6 +97,9 @@ export default function InvitationsScreen() {
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Invitations</Text>
       <Text style={[accountStyles.copy, { color: colors.secondary }]}>Share each invitation with one friend. It expires after seven days.</Text>
       <Action title="Create invitation" disabled={busy} onPress={() => void change('create')} />
+      <Text accessibilityRole="header" style={[accountStyles.copy, { color: colors.text }]}>Active invitations</Text>
+      {invites === undefined && !listError && <Text style={{ color: colors.secondary }}>Loading invitations…</Text>}
+      {invites?.length === 0 && !selected && <Text style={{ color: colors.secondary }}>You have no unused invitations.</Text>}
       {invites?.map((invite) => (
         <View key={invite.token} style={[styles.invite, { borderColor: colors.border }]}>
           <Text style={{ color: colors.secondary }}>
