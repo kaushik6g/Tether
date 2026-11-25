@@ -14,6 +14,9 @@ export function signInProblem(error: AuthError) {
 }
 
 export function signUpProblem(error: AuthError) {
+  if (error.status === 403 && error.message.startsWith('Confirm that you are at least 18')) {
+    return error.message;
+  }
   switch (error.code) {
     case 'weak_password':
       return 'Choose a longer password that is harder to guess.';

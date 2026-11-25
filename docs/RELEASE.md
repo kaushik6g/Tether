@@ -18,7 +18,13 @@ Check that the target Supabase project has all migrations in `supabase/migration
 
 Set the Supabase project URL and publishable key in Vercel and deploy over HTTPS. Set the Supabase Auth Site URL to the deployed origin. That origin also serves the browser invitation pages.
 
+For the signup age check, apply `20261125002200_signup_age_attestation.sql`, then enable **Authentication → Hooks → Before User Created** and select `public.require_tether_signup_age`. Enable it after publishing the updated signup form. The app checks the entered date on-device and submits a self-declared 18+ confirmation. Existing accounts can still sign in.
+
 Install the included recovery email template under **Authentication → Email Templates → Reset password** before enabling password recovery. The recovery form expects a code from that email.
+
+## Restore account access
+
+If the app says account access is unavailable, check that the build's `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are set for the same project. For local development, use `.env.local` and restart Metro with `npm run start -- --clear`. For a cloud build, set both variables in the environment used by its build profile, then rebuild. Web and Android bundle exports validate the auth configuration before packaging.
 
 ## Mobile
 

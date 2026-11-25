@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { signInProblem, signUpProblem } from '@/auth/account-errors';
 import { isAccountEmail } from '@/auth/email';
 import { rememberInvite } from '@/auth/pending-invite';
+import { minimumSignupAge, signupAgeProblem } from '@/auth/signup-age';
 import { inviteToken } from '@/features/invites';
 import { AccountUnavailable } from '@/components/account-unavailable';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
@@ -17,10 +18,12 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const create = mode === 'sign-up';
   const title = create ? 'Create account' : 'Sign in';
   const passwordInput = useRef<ComponentRef<typeof TextInput>>(null);
+  const birthdayInput = useRef<ComponentRef<typeof TextInput>>(null);
   const requestInFlight = useRef(false);
   const [email, setEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [confirmationEmail, setConfirmationEmail] = useState('');
@@ -40,17 +43,30 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       return;
     }
 
+    if (create) {
+      const ageProblem = signupAgeProblem(dateOfBirth);
+      if (ageProblem) {
+        setError(ageProblem);
+        birthdayInput.current?.focus();
+        return;
+      }
+    }
+
     requestInFlight.current = true;
     setSubmitting(true);
     try {
       if (invite) await rememberInvite(invite, address);
       const credentials = { email: address, password };
       if (create) {
-        const { data, error: failure } = await supabase.auth.signUp(credentials);
+        const { data, error: failure } = await supabase.auth.signUp({
+          ...credentials,
+          options: { data: { tether_age_eligible: true } },
+        });
         if (failure) setError(signUpProblem(failure));
         else if (!data.session) {
           setConfirmationEmail(address);
           setPassword('');
+          setDateOfBirth('');
           setShowPassword(false);
         }
       } else {
@@ -100,8 +116,8 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
           autoCorrect={false}
           editable={!submitting}
           onChangeText={setPassword}
-          onSubmitEditing={submit}
-          returnKeyType="go"
+          onSubmitEditing={create ? () => birthdayInput.current?.focus() : submit}
+          returnKeyType={create ? 'next' : 'go'}
           secureTextEntry={!showPassword}
           style={inputStyle}
           value={password}
@@ -110,6 +126,29 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       <Pressable accessibilityRole="button" disabled={submitting} onPress={() => setShowPassword((visible) => !visible)}>
         <Text style={[accountStyles.link, { color: colors.text }]}>{showPassword ? 'Hide password' : 'Show password'}</Text>
       </Pressable>
+      {create && !confirmationEmail && (
+        <View style={styles.field}>
+          <Text style={{ color: colors.text }}>Date of birth</Text>
+          <TextInput
+            ref={birthdayInput}
+            accessibilityLabel="Date of birth, YYYY-MM-DD"
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={!submitting}
+            maxLength={10}
+            onChangeText={setDateOfBirth}
+            onSubmitEditing={submit}
+            placeholder="YYYY-MM-DD"
+            placeholderTextColor={colors.secondary}
+            returnKeyType="go"
+            style={inputStyle}
+            value={dateOfBirth}
+          />
+          <Text style={{ color: colors.secondary }}>
+            You must be {minimumSignupAge} or older. Tether does not save your date of birth.
+          </Text>
+        </View>
+      )}
       {error ? <Text accessibilityRole="alert" style={{ color: colors.error }}>{error}</Text> : null}
       {confirmationEmail ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>
         Check {confirmationEmail} for a confirmation link, then sign in.
