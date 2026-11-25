@@ -1,5 +1,5 @@
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text } from 'react-native';
 
 import { useSession } from '@/auth/session';
@@ -15,6 +15,8 @@ export default function ProfileScreen() {
   const invite = typeof params.invite === 'string' ? inviteToken(params.invite) : null;
   const fromSettings = params.from === 'settings';
   const userId = useSession().session?.user.id;
+  const writing = useRef(false);
+  const [originalName, setOriginalName] = useState('');
   const [name, setName] = useState('');
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [ready, setReady] = useState(false);
@@ -26,7 +28,7 @@ export default function ProfileScreen() {
     if (!userId) return;
     let active = true;
     void profileName(userId).then((value) => {
-      if (active) { setName(value); setReady(true); }
+      if (active) { setName(value); setOriginalName(value); setReady(true); }
     }).catch(() => {
       if (active) setError('Could not load your profile.');
     });
@@ -34,20 +36,24 @@ export default function ProfileScreen() {
   }, [userId, loadAttempt]);
 
   async function save() {
-    if (!userId || !ready || saving || !name.trim()) return;
+    const nextName = name.trim();
+    if (!userId || !ready || writing.current || !nextName || nextName === originalName) return;
+    writing.current = true;
     setError('');
     setSaving(true);
     try {
-      await saveProfile(userId, name);
+      await saveProfile(userId, nextName);
       if (invite) {
         router.replace({ pathname: '/invite/[token]', params: { token: invite } });
         return;
       }
-      setName(name.trim());
+      setName(nextName);
+      setOriginalName(nextName);
       setSaved(true);
     } catch {
       setError('Could not save your display name. Try again.');
     } finally {
+      writing.current = false;
       setSaving(false);
     }
   }
@@ -65,7 +71,7 @@ export default function ProfileScreen() {
       <Text style={[accountStyles.copy, { color: colors.secondary }]}>Friends see this name on your invites and in their circles.</Text>
       <Field accessibilityLabel="Display name" placeholder="Display name" maxLength={60}
         value={name} editable={ready && !saving} onChangeText={(value) => { setName(value); setSaved(false); }} />
-      <Action title={saving ? 'Saving…' : 'Save name'} disabled={!ready || !name.trim() || saving} onPress={save} />
+      <Action title={saving ? 'Saving…' : 'Save name'} disabled={!ready || !name.trim() || name.trim() === originalName || saving} onPress={save} />
       {saved && <Text accessibilityRole="alert" style={{ color: colors.text }}>Name saved.</Text>}
       {error ? <Problem message={error} /> : null}
       {!ready && error && <Action title="Retry loading profile" onPress={() => {
