@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { signInProblem, signUpProblem } from '@/auth/account-errors';
 import { isAccountEmail } from '@/auth/email';
 import { rememberInvite } from '@/auth/pending-invite';
-import { minimumSignupAge, signupAgeProblem } from '@/auth/signup-age';
+import { minimumSignupAge, normalizeBirthDate, signupAgeProblem } from '@/auth/signup-age';
 import { inviteToken } from '@/features/invites';
 import { AccountUnavailable } from '@/components/account-unavailable';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
@@ -57,9 +57,19 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     try {
       if (create) {
         // Only send a birth date once the server can move it into private storage.
-        const { data: ready, error: setupError } = await supabase.rpc('tether_birth_date_signup_ready');
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+        const { data: ready, error: setupError, status } = await Promise.resolve(
+          supabase.rpc('tether_birth_date_signup_ready').abortSignal(controller.signal)
+        ).finally(() => clearTimeout(timeout));
         if (setupError || ready !== true) {
-          setError('Account creation is temporarily unavailable. Try again later.');
+          if (status === 0 || controller.signal.aborted) {
+            setError('Could not reach Tether. Check your connection and try creating your account again.');
+          } else if (setupError?.code === 'PGRST202' || status === 401 || status === 403) {
+            setError('Signup needs attention from the Tether administrator. Your details have not been submitted.');
+          } else {
+            setError('Account creation is temporarily unavailable. Try again later.');
+          }
           return;
         }
       }
@@ -68,7 +78,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       if (create) {
         const { data, error: failure } = await supabase.auth.signUp({
           ...credentials,
-          options: { data: { tether_date_of_birth: dateOfBirth.trim() } },
+          options: { data: { tether_date_of_birth: normalizeBirthDate(dateOfBirth) } },
         });
         if (failure) setError(signUpProblem(failure));
         else if (!data.session) {
@@ -139,14 +149,14 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
           <Text style={{ color: colors.text }}>Date of birth</Text>
           <TextInput
             ref={birthdayInput}
-            accessibilityLabel="Date of birth, YYYY-MM-DD"
+            accessibilityLabel="Date of birth, DD-MM-YYYY"
             autoCapitalize="none"
             autoCorrect={false}
             editable={!submitting}
             maxLength={10}
             onChangeText={setDateOfBirth}
             onSubmitEditing={submit}
-            placeholder="YYYY-MM-DD"
+            placeholder="DD-MM-YYYY"
             placeholderTextColor={colors.secondary}
             returnKeyType="go"
             style={inputStyle}

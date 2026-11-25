@@ -1,9 +1,13 @@
 export const minimumSignupAge = 18;
 export const signupAgeMessage = 'You must be at least ' + minimumSignupAge + ' to create a Tether account.';
 
+export function normalizeBirthDate(input: string): string {
+  return input.trim().replace(/^(\d{2})-(\d{2})-(\d{4})$/, '$3-$2-$1');
+}
+
 export function signupAgeProblem(dateOfBirth: string, today = new Date()): string | null {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOfBirth.trim());
-  const invalid = 'Enter a valid date of birth in YYYY-MM-DD format.';
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(normalizeBirthDate(dateOfBirth));
+  const invalid = 'Enter a valid date of birth in DD-MM-YYYY or YYYY-MM-DD format.';
   if (!match) return invalid;
 
   const year = Number(match[1]);
