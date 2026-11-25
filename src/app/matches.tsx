@@ -7,6 +7,8 @@ import { Action, Field, Problem } from '@/components/feature-ui';
 import { listMatches } from '@/features/api';
 import { useMatchFeed } from '@/features/use-match-feed';
 
+const inboxDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
 export default function MatchesScreen() {
   const colors = useAccountColors();
   const [query, setQuery] = useState('');
@@ -39,6 +41,9 @@ export default function MatchesScreen() {
         <View key={match.id} style={[styles.item, { borderColor: colors.border }]}>
           <Link href={{ pathname: '/chat/[id]', params: { id: match.id } }}
             style={[accountStyles.link, { color: colors.text }]}>{match.display_name}</Link>
+          <Text style={{ color: colors.secondary }}>
+            {match.closed_at ? 'Closed' : 'Opened'} {inboxDate.format(new Date(match.closed_at ?? match.created_at))}
+          </Text>
           <Text style={{ color: colors.secondary }}>{match.closed_reason ? 'Chat closed' : match.closed_at ? 'Plan made' : 'Ready to make a plan'}</Text>
         </View>
       ))}
