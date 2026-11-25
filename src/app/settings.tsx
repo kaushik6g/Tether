@@ -9,6 +9,12 @@ import { supabase } from '@/lib/supabase';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { disableMatchPush, matchPushAvailable } from '@/features/match-push';
 
+const appearanceLabels: Record<Appearance, string> = {
+  system: 'Follow device setting',
+  light: 'Light',
+  dark: 'Dark',
+};
+
 export default function SettingsScreen() {
   const colors = useAccountColors();
   const linkStyle = [accountStyles.link, { color: colors.text }];
@@ -60,7 +66,7 @@ export default function SettingsScreen() {
       {matchPushAvailable && <Link href="/notifications" style={linkStyle}>Match notifications</Link>}
       <Text accessibilityRole="header" style={[accountStyles.copy, { color: colors.text }]}>Appearance</Text>
       {(['system', 'light', 'dark'] as const).map((option) => (
-        <Action key={option} title={option === preference ? option + ' (selected)' : option}
+        <Action key={option} title={appearanceLabels[option] + (option === preference ? ' (selected)' : '')}
           disabled={appearanceBusy || option === preference} onPress={() => selectAppearance(option)} />
       ))}
       {confirm ? (
