@@ -5,11 +5,15 @@ import { StyleSheet, Text, View } from 'react-native';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { errorMessage, listMatches } from '@/features/api';
+import { catchupId } from '@/features/catchup-id';
 import { listMatchPlans, suggestPlan } from '@/features/plans';
 import { formatPlanTime, localPlanFields, localTimeZone, parseLocalPlanTime } from '@/features/plan-time';
 
 export default function ProposePlanScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = catchupId(params.id);
+  const colors = useAccountColors();
+  if (!id) return <AccountPage><Text style={{ color: colors.text }}>This catch-up is unavailable.</Text></AccountPage>;
   return <ProposalForm key={id} id={id} />;
 }
 

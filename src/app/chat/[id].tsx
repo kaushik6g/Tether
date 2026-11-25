@@ -8,6 +8,7 @@ import { AccountPage, accountStyles, useAccountColors } from '@/components/accou
 import { ChatPlan } from '@/components/chat-plan';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { closeMatch, listMatches, listMessagePage, sendMessage, type MessagePage } from '@/features/api';
+import { catchupId } from '@/features/catchup-id';
 import { mergeMessagePages, prependMessages } from '@/features/message-timeline';
 import { listMatchPlans, listPlanHistory } from '@/features/plans';
 import { useMatchFeed } from '@/features/use-match-feed';
@@ -21,10 +22,11 @@ const messageTime = new Intl.DateTimeFormat(undefined, {
 export default function ChatScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const colors = useAccountColors();
-  if (typeof params.id !== 'string') {
+  const id = catchupId(params.id);
+  if (!id) {
     return <AccountPage><Text style={{ color: colors.text }}>This conversation is unavailable.</Text></AccountPage>;
   }
-  return <Chat key={params.id} id={params.id} />;
+  return <Chat key={id} id={id} />;
 }
 
 function Chat({ id }: { id: string }) {
