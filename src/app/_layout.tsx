@@ -39,6 +39,7 @@ function AccountRoutes() {
         </Stack.Protected>
         <Stack.Protected guard={!!session}>
           <Stack.Screen name="circle" />
+          <Stack.Screen name="settings" />
           <Stack.Screen name="friend/[id]" />
           <Stack.Screen name="privacy" />
           <Stack.Screen name="delete-account" />

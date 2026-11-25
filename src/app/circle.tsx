@@ -7,7 +7,7 @@ import { AccountPage, accountStyles, useAccountColors } from '@/components/accou
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { listCircle, listMatches, profileName, tapFriend, type Friend } from '@/features/api';
 import { useMatchFeed } from '@/features/use-match-feed';
-import { disableMatchPush, matchPushAvailable } from '@/features/match-push';
+import { disableMatchPush } from '@/features/match-push';
 import { supabase } from '@/lib/supabase';
 
 export default function CircleScreen() {
@@ -80,9 +80,6 @@ export default function CircleScreen() {
         {name ? 'Edit display name' : 'Set your display name'}
       </Link>
       <Link href="/invitations" style={[accountStyles.link, { color: colors.text }]}>Invitations</Link>
-      {matchPushAvailable && (
-        <Link href="/notifications" style={[accountStyles.link, { color: colors.text }]}>Match notifications</Link>
-      )}
       <Link href="/matches" style={[accountStyles.link, { color: colors.text }]}>Catch-ups</Link>
       {openMatch && (
         <Link
@@ -110,7 +107,7 @@ export default function CircleScreen() {
       ))}
       {error ? <Problem message={error} /> : null}
       {error && friends === null && <Action title="Try again" onPress={() => retry.current()} />}
-      <Link href="/privacy" style={[accountStyles.link, { color: colors.text }]}>Privacy</Link>
+      <Link href="/settings" style={[accountStyles.link, { color: colors.text }]}>Settings</Link>
       <Action title={signingOut ? 'Signing out…' : 'Sign out'} disabled={signingOut} onPress={signOut} />
     </AccountPage>
   );
