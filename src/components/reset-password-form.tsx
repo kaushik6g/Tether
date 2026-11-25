@@ -26,8 +26,10 @@ export function ResetPasswordForm({ email, onRestart }: { email: string; onResta
     };
   }, []);
 
+  const validCode = /^\d{6,10}$/.test(code.trim());
+
   async function submit() {
-    if (submitting.current) return;
+    if (submitting.current || (!verified && !validCode)) return;
     if (!password || password !== confirmation) {
       setProblem('Enter the same new password in both fields.');
       return;
@@ -94,9 +96,9 @@ export function ResetPasswordForm({ email, onRestart }: { email: string; onResta
         autoCapitalize="none" autoCorrect={false} editable={!busy} value={password} onChangeText={setPassword} />
       <Field accessibilityLabel="Confirm new password" placeholder="Confirm new password" secureTextEntry
         autoComplete="new-password" autoCapitalize="none" autoCorrect={false} editable={!busy}
-        value={confirmation} onChangeText={setConfirmation} />
+        value={confirmation} onChangeText={setConfirmation} returnKeyType="go" onSubmitEditing={submit} />
       <Action title={busy ? 'Updating password' : 'Update password'} onPress={submit}
-        disabled={busy || (!verified && !/^\d{6,10}$/.test(code.trim())) || !password || !confirmation} />
+        disabled={busy || (!verified && !validCode) || !password || !confirmation} />
       <Action title="Use a different code or email" disabled={busy} onPress={onRestart} />
       {problem ? <Problem message={problem} /> : null}
     </>
