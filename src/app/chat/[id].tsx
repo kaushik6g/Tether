@@ -46,8 +46,19 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
   const [olderError, setOlderError] = useState('');
 
   const load = useCallback(async () => {
-    const [matches, messages, plans, history] = await Promise.all([listMatches(), listMessagePage(id), listMatchPlans(id), listPlanHistory(id)]);
-    return { match: matches.find((entry) => entry.id === id), messages, plans, history };
+    const [[matches, messages], planData] = await Promise.all([
+      Promise.all([listMatches(), listMessagePage(id)]),
+      Promise.allSettled([listMatchPlans(id), listPlanHistory(id)]),
+    ]);
+    const [plans, history] = planData;
+    return {
+      match: matches.find((entry) => entry.id === id),
+      messages,
+      plans: plans.status === 'fulfilled' ? plans.value : [],
+      history: history.status === 'fulfilled' ? history.value : [],
+      failedPlans: plans.status === 'rejected',
+      failedHistory: history.status === 'rejected',
+    };
   }, [id]);
   const { data, error, refreshing, reload } = useMatchFeed('catch-up-' + id, id, load, true);
 
@@ -107,7 +118,14 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
       {!data && !error && <Text style={{ color: colors.secondary }}>Opening conversation…</Text>}
       {data && !match && <Problem message="This conversation is unavailable." />}
       {match && <>
-        <ChatPlan matchId={id} plans={data.plans} history={data.history} userId={userId} closed={!!match.closed_at} stale={error} reload={reload} />
+        {!data.failedPlans ? (
+          <ChatPlan matchId={id} plans={data.plans} history={data.history} userId={userId} closed={!!match.closed_at} stale={error} reload={reload} />
+        ) : (
+          <>
+            <Problem message="Could not load the current plan." />
+            <Action title="Retry loading plan" disabled={refreshing} onPress={reload} />
+          </>
+        )}
         {!match.closed_at && !!timeline?.messages.length && (
           <Action title="Jump to reply" onPress={() => scroll.current?.scrollToEnd({ animated: false })} />
         )}
@@ -129,7 +147,7 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
             </View>
           );
         })}
-        {match.closed_at ? <Text style={{ color: colors.secondary }}>{match.closed_reason || data.plans.length > 0 ? 'This chat is closed.' : 'Plan made.'}</Text> : <>
+        {match.closed_at ? <Text style={{ color: colors.secondary }}>{match.closed_reason || data.failedPlans || data.plans.length > 0 ? 'This chat is closed.' : 'Plan made.'}</Text> : <>
           <Field accessibilityLabel="Message" placeholder="Suggest a time or send a reply"
             maxLength={replyLimit} editable={!busy} value={draft} onChangeText={setDraft} multiline />
           {draft.length >= replyLimit - 100 && (
