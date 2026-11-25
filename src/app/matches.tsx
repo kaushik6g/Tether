@@ -34,9 +34,13 @@ export default function MatchesScreen() {
       <Text accessibilityRole="header" style={[accountStyles.copy, { color: colors.text }]}>
         {archived ? 'Archived catch-ups' : 'Open catch-ups'}
       </Text>
-      {!!category?.length && (
-        <Field accessibilityLabel="Search catch-ups by name" placeholder="Search by name"
-          value={query} onChangeText={setQuery} autoCorrect={false} />
+      {(!!category?.length || !!query) && (
+        <View style={styles.search}>
+          <Field accessibilityLabel="Search catch-ups by name" placeholder="Search by name"
+            style={styles.searchField} value={query} onChangeText={setQuery}
+            autoCorrect={false} returnKeyType="search" clearButtonMode="while-editing" />
+          {!!query && <Action title="Clear search" onPress={() => setQuery('')} />}
+        </View>
       )}
       {!!category?.length && visible?.length === 0 && <Text style={{ color: colors.secondary }}>No catch-ups match your search.</Text>}
       {category?.length === 0 && <Text style={{ color: colors.secondary }}>
@@ -59,5 +63,7 @@ export default function MatchesScreen() {
 }
 
 const styles = StyleSheet.create({
+  search: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
+  searchField: { flexGrow: 1, minWidth: 180 },
   item: { borderBottomWidth: 1, paddingBottom: 12 },
 });
