@@ -48,6 +48,8 @@ A private tap expires after seven days. When friends tap each other within that 
 
 [Make and manage confirmed catch-up plans](docs/CATCHUP_PLANS.md).
 
+[Prepare a web or mobile release](docs/RELEASE.md).
+
 ## Product principles
 
 - One-sided taps stay private.
