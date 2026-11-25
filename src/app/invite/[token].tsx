@@ -1,5 +1,5 @@
 import { Link, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Platform, Text } from 'react-native';
 
 import { useSession } from '@/auth/session';
@@ -30,11 +30,12 @@ function Invitation({ token }: { token: string | null }) {
   const accepting = useRef(false);
   const named = profile && profile.userId === userId ? profile.named : undefined;
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     if (!token) return;
     let revision = 0;
     const load = () => {
       const current = ++revision;
+      setInviter(undefined);
       setPreviewFailed(false);
       void previewInvite(token).then((name) => {
         if (current === revision) setInviter(name);
@@ -45,7 +46,7 @@ function Invitation({ token }: { token: string | null }) {
     previewAgain.current = load;
     load();
     return () => { revision++; previewAgain.current = () => {}; };
-  }, [token]);
+  }, [token]));
 
   useFocusEffect(useCallback(() => {
     if (!userId || !token) return;
