@@ -14,6 +14,7 @@ export default function CircleScreen() {
   const { data: catchUps } = useMatchFeed('circle-catch-ups', undefined, listMatches);
   const openMatch = catchUps?.find((match) => !match.closed_at);
   const userId = useSession().session?.user.id;
+  const visit = useRef(0);
   const pendingTaps = useRef(new Set<string>());
   const [query, setQuery] = useState('');
   const [friends, setFriends] = useState<Friend[] | null>(null);
@@ -25,6 +26,7 @@ export default function CircleScreen() {
 
   useFocusEffect(useCallback(() => {
     if (!userId) return;
+    visit.current++;
     let attempt = 0;
     function load() {
       if (!userId) return;
@@ -44,18 +46,19 @@ export default function CircleScreen() {
     }
     retry.current = load;
     load();
-    return () => { attempt++; retry.current = () => {}; };
+    return () => { visit.current++; attempt++; retry.current = () => {}; };
   }, [userId]));
 
   async function tap(friendId: string) {
     if (pendingTaps.current.has(friendId)) return;
+    const currentVisit = visit.current;
     pendingTaps.current.add(friendId);
     setError('');
     try {
       const id = await tapFriend(friendId);
-      if (id) router.push({ pathname: '/chat/[id]', params: { id } });
+      if (id && currentVisit === visit.current) router.push({ pathname: '/chat/[id]', params: { id } });
     } catch {
-      setError('Could not save your tap. Try again.');
+      if (currentVisit === visit.current) setError('Could not save your tap. Try again.');
     } finally {
       pendingTaps.current.delete(friendId);
     }
