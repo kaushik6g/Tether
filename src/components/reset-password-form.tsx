@@ -5,7 +5,7 @@ import { useAccountColors } from '@/components/account-ui';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { createRecoveryClient } from '@/lib/supabase';
 
-export function ResetPasswordForm({ email }: { email: string }) {
+export function ResetPasswordForm({ email, onRestart }: { email: string; onRestart: () => void }) {
   const colors = useAccountColors();
   const client = useRef<ReturnType<typeof createRecoveryClient>>(null);
   const active = useRef(false);
@@ -86,6 +86,7 @@ export function ResetPasswordForm({ email }: { email: string }) {
         value={confirmation} onChangeText={setConfirmation} />
       <Action title={busy ? 'Updating password' : 'Update password'} onPress={submit}
         disabled={busy || (!verified && !/^\d{6,10}$/.test(code.trim())) || !password || !confirmation} />
+      <Action title="Use a different code or email" disabled={busy} onPress={onRestart} />
       {problem ? <Problem message={problem} /> : null}
     </>
   );

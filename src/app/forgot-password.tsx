@@ -49,12 +49,14 @@ export default function ForgotPasswordScreen() {
     <AccountPage>
       <Link href={{ pathname: '/sign-in', params: invite ? { invite } : {} }} replace style={[accountStyles.link, { color: colors.text }]}>Back to sign in</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Reset your password</Text>
+      {!resetEmail && <>
       <Field accessibilityLabel="Account email" placeholder="Account email" keyboardType="email-address"
         autoCapitalize="none" autoCorrect={false} editable={!busy} value={email} onChangeText={setEmail} />
       <Action title={busy ? 'Requesting code' : 'Email a reset code'} disabled={!supabase || busy || !email.trim()} onPress={request} />
       <Action title="I have a reset code" disabled={busy || !supabase || !isAccountEmail(email.trim())}
         onPress={() => setResetEmail(email.trim())} />
-      {resetEmail && <ResetPasswordForm key={resetEmail} email={resetEmail} />}
+      </>}
+      {resetEmail && <ResetPasswordForm key={resetEmail} email={resetEmail} onRestart={() => { setResetEmail(''); setNotice(false); }} />}
       {notice && <Text accessibilityRole="alert" style={{ color: colors.text }}>If an account exists for that email, you’ll receive a reset code.</Text>}
       {problem ? <Problem message={problem} /> : null}
     </AccountPage>
