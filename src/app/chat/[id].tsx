@@ -117,7 +117,7 @@ function Chat({ id }: { id: string }) {
                 <Text style={{ color: colors.secondary, fontWeight: '600' }}>{sender}</Text>
                 <Text style={{ color: colors.secondary }}>{messageTime.format(new Date(message.created_at))}</Text>
               </View>
-              <Text style={[accountStyles.copy, { color: colors.text }]}>{message.body}</Text>
+              <Text selectable style={[accountStyles.copy, { color: colors.text }]}>{message.body}</Text>
             </View>
           );
         })}
