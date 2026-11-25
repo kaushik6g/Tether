@@ -19,6 +19,8 @@ function Invitation({ token }: { token: string | null }) {
   const { session } = useSession();
   const router = useRouter();
   const userId = session?.user.id;
+  const previewAgain = useRef(() => {});
+  const [previewFailed, setPreviewFailed] = useState(false);
   const [inviter, setInviter] = useState<string | null | undefined>();
   const [profile, setProfile] = useState<{ userId: string; named: boolean }>();
   const [error, setError] = useState('');
@@ -28,13 +30,19 @@ function Invitation({ token }: { token: string | null }) {
 
   useEffect(() => {
     if (!token) return;
-    let active = true;
-    void previewInvite(token).then((name) => {
-      if (active) setInviter(name);
-    }).catch(() => {
-      if (active) setError('Could not load the invitation. Reopen the link to try again.');
-    });
-    return () => { active = false; };
+    let revision = 0;
+    const load = () => {
+      const current = ++revision;
+      setPreviewFailed(false);
+      void previewInvite(token).then((name) => {
+        if (current === revision) setInviter(name);
+      }).catch(() => {
+        if (current === revision) setPreviewFailed(true);
+      });
+    };
+    previewAgain.current = load;
+    load();
+    return () => { revision++; previewAgain.current = () => {}; };
   }, [token]);
 
   useFocusEffect(useCallback(() => {
@@ -69,7 +77,7 @@ function Invitation({ token }: { token: string | null }) {
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>
         {inviter ? inviter + ' invited you to Tether' : 'Tether invitation'}
       </Text>
-      {token && inviter === undefined && !error ? <Text style={{ color: colors.secondary }}>Opening invitation.</Text> : null}
+      {token && inviter === undefined && !previewFailed ? <Text style={{ color: colors.secondary }}>Opening invitation.</Text> : null}
       {!token || inviter === null ? <Text style={[accountStyles.copy, { color: colors.secondary }]}>This invitation is invalid, expired, or already used.</Text> : null}
       {inviter && token && <>
         <Text style={[accountStyles.copy, { color: colors.secondary }]}>Accept to add each other to your private circles.</Text>
@@ -97,6 +105,10 @@ function Invitation({ token }: { token: string | null }) {
               style={[accountStyles.link, { color: colors.text }]}>Create an account</Link>
           </>
         )}
+      </>}
+      {previewFailed && <>
+        <Problem message="Could not load the invitation." />
+        <Action title="Retry invitation" onPress={() => previewAgain.current()} />
       </>}
       {error ? <Problem message={error} /> : null}
       <Link href={session ? '/circle' : '/'} replace style={[accountStyles.link, { color: colors.secondary }]}>Back to Tether</Link>
