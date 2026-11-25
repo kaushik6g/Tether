@@ -17,6 +17,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const passwordInput = useRef<ComponentRef<typeof TextInput>>(null);
   const requestInFlight = useRef(false);
   const [email, setEmail] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -98,11 +99,14 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
           onChangeText={setPassword}
           onSubmitEditing={submit}
           returnKeyType="go"
-          secureTextEntry
+          secureTextEntry={!showPassword}
           style={inputStyle}
           value={password}
         />
       </View>
+      <Pressable accessibilityRole="button" disabled={submitting} onPress={() => setShowPassword((visible) => !visible)}>
+        <Text style={[accountStyles.link, { color: colors.text }]}>{showPassword ? 'Hide password' : 'Show password'}</Text>
+      </Pressable>
       {error ? <Text accessibilityRole="alert" style={{ color: colors.error }}>{error}</Text> : null}
       {notice ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>{notice}</Text> : null}
       {!create && <Link href={{ pathname: '/forgot-password', params: invite ? { invite } : {} }} style={[accountStyles.link, { color: colors.text }]}>Forgot password?</Link>}
