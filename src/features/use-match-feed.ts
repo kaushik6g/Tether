@@ -8,6 +8,7 @@ let nextSubscription = 0;
 
 export function useMatchFeed<T>(channelId: string, matchId: string | undefined, load: () => Promise<T>, observePlans = false) {
   const [data, setData] = useState<T>();
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
   const refresh = useRef(() => {});
 
@@ -25,6 +26,7 @@ export function useMatchFeed<T>(channelId: string, matchId: string | undefined, 
       }
 
       running = true;
+      setRefreshing(true);
       void load().then((value) => {
         if (active) { setData(value); setError(false); }
       }).catch(() => {
@@ -34,6 +36,8 @@ export function useMatchFeed<T>(channelId: string, matchId: string | undefined, 
         if (pending) {
           pending = false;
           refreshNow();
+        } else if (active) {
+          setRefreshing(false);
         }
       });
     }
@@ -72,5 +76,5 @@ export function useMatchFeed<T>(channelId: string, matchId: string | undefined, 
     };
   }, [channelId, matchId, load, observePlans]));
 
-  return { data, error, reload: () => refresh.current() };
+  return { data, error, refreshing, reload: () => refresh.current() };
 }

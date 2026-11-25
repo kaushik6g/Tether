@@ -15,7 +15,7 @@ export default function MatchesScreen() {
   const router = useRouter();
   const { archive } = useLocalSearchParams<{ archive?: string }>();
   const archived = archive === '1';
-  const { data, error, reload } = useMatchFeed('catch-up-inbox', undefined, listMatches);
+  const { data, error, refreshing, reload } = useMatchFeed('catch-up-inbox', undefined, listMatches);
 
   const category = data?.filter((match) => !!match.closed_at === archived);
   if (archived && category) {
@@ -57,7 +57,7 @@ export default function MatchesScreen() {
         </View>
       ))}
       {error ? <Problem message="Could not load catch-ups. Try again." /> : null}
-      <Action title="Refresh" onPress={reload} />
+      <Action title={refreshing ? "Refreshing catch-ups" : "Refresh"} disabled={refreshing} onPress={reload} />
     </AccountPage>
   );
 }
