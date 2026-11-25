@@ -14,10 +14,14 @@ export async function rememberInvite(token: string, email: string) {
 export async function readInvite(email: string): Promise<PendingInvite | null> {
   const stored = await AsyncStorage.getItem(storageKey);
   if (!stored) return null;
-  const entry = JSON.parse(stored) as Partial<PendingInvite> | null;
+  let entry: Partial<PendingInvite> | null;
+  try {
+    entry = JSON.parse(stored) as Partial<PendingInvite> | null;
+  } catch {
+    return null;
+  }
   const token = typeof entry?.token === 'string' ? inviteToken(entry.token) : null;
-  if (!token || typeof entry?.expiresAt !== 'number' || entry.expiresAt <= Date.now()) {
-    await AsyncStorage.removeItem(storageKey);
+  if (!token || typeof entry?.expiresAt !== 'number' || !Number.isFinite(entry.expiresAt) || entry.expiresAt <= Date.now()) {
     return null;
   }
   if (entry.email !== email.toLowerCase()) return null;
