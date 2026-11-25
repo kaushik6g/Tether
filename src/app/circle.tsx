@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
-import { Action, Problem } from '@/components/feature-ui';
+import { Action, Field, Problem } from '@/components/feature-ui';
 import { listCircle, listMatches, profileName, tapFriend, type Friend } from '@/features/api';
 import { useMatchFeed } from '@/features/use-match-feed';
 import { disableMatchPush, matchPushAvailable } from '@/features/match-push';
@@ -17,6 +17,7 @@ export default function CircleScreen() {
   const openMatch = catchUps?.find((match) => !match.closed_at);
   const userId = useSession().session?.user.id;
   const pendingTaps = useRef(new Set<string>());
+  const [query, setQuery] = useState('');
   const [friends, setFriends] = useState<Friend[] | null>(null);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -69,6 +70,9 @@ export default function CircleScreen() {
     }
   }
 
+  const filter = query.trim().toLocaleLowerCase();
+  const visible = friends?.filter((friend) => friend.display_name.toLocaleLowerCase().includes(filter));
+
   return (
     <AccountPage>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Your circle</Text>
@@ -90,7 +94,10 @@ export default function CircleScreen() {
       )}
       {friends === null && !error && <Text style={{ color: colors.secondary }}>Loading your circle…</Text>}
       {friends?.length === 0 && <Text style={[accountStyles.copy, { color: colors.secondary }]}>Invite a friend to start your circle.</Text>}
-      {friends?.map((friend) => (
+      {!!friends?.length && <Field accessibilityLabel="Find a friend in your circle" placeholder="Find a friend"
+        value={query} onChangeText={setQuery} autoCorrect={false} />}
+      {!!friends?.length && visible?.length === 0 && <Text style={{ color: colors.secondary }}>No names match your search.</Text>}
+      {visible?.map((friend) => (
         <View key={friend.friend_id} style={[styles.row, { borderColor: colors.border }]}>
           <Link href={{ pathname: '/friend/[id]', params: { id: friend.friend_id } }}
             accessibilityLabel={'Manage ' + friend.display_name}
