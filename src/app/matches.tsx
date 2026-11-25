@@ -16,6 +16,9 @@ export default function MatchesScreen() {
   const { data, error, reload } = useMatchFeed('catch-up-inbox', undefined, listMatches);
 
   const category = data?.filter((match) => !!match.closed_at === archived);
+  if (archived && category) {
+    category.sort((left, right) => Date.parse(right.closed_at ?? right.created_at) - Date.parse(left.closed_at ?? left.created_at));
+  }
   const term = query.trim().toLocaleLowerCase();
   const visible = category?.filter((match) => match.display_name.toLocaleLowerCase().includes(term));
 
