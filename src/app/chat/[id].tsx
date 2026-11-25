@@ -12,6 +12,8 @@ import { mergeMessagePages, prependMessages } from '@/features/message-timeline'
 import { listMatchPlans, listPlanHistory } from '@/features/plans';
 import { useMatchFeed } from '@/features/use-match-feed';
 
+const replyLimit = 1000;
+
 const messageTime = new Intl.DateTimeFormat(undefined, {
   month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
 });
@@ -121,7 +123,10 @@ function Chat({ id }: { id: string }) {
         })}
         {match.closed_at ? <Text style={{ color: colors.secondary }}>{match.closed_reason || data.plans.length > 0 ? 'This chat is closed.' : 'Plan made.'}</Text> : <>
           <Field accessibilityLabel="Message" placeholder="Suggest a time or send a reply"
-            maxLength={1000} editable={!busy} value={draft} onChangeText={setDraft} multiline />
+            maxLength={replyLimit} editable={!busy} value={draft} onChangeText={setDraft} multiline />
+          {draft.length >= replyLimit - 100 && (
+            <Text style={{ color: colors.secondary }}>{replyLimit - draft.length} characters left</Text>
+          )}
           {problem ? <Problem message={problem} /> : null}
           <Action title="Send reply" onPress={() => void update(false)} disabled={busy || !draft.trim()} />
           {confirmClose ? (
