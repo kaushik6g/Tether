@@ -26,6 +26,8 @@ Tether supports email and password accounts, private circles, invitations, mutua
 
 ## Supabase Auth
 
+For password recovery, copy [the recovery email template](supabase/templates/recovery.html) into the **Reset password** template in Supabase Authentication. The app expects an emailed code.
+
 1. Copy `.env.example` to `.env.local`.
 2. In the Tether Supabase dashboard, open **Connect** and enter the project URL and publishable key in the two environment variables.
 3. Enable the Email provider in Supabase Auth. If email confirmation is enabled, use a reachable site URL for the signup confirmation redirect. After confirming, reopen Tether and sign in with the same email and password.
