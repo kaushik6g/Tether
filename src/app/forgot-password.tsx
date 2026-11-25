@@ -23,20 +23,22 @@ export default function ForgotPasswordScreen() {
 
   async function request() {
     if (sending.current || !supabase) return;
+    const address = email.trim();
     setNotice(false);
     setProblem('');
-    if (!isAccountEmail(email.trim())) {
+    if (!isAccountEmail(address)) {
       setProblem('Enter a valid account email.');
       return;
     }
     sending.current = true;
     setBusy(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+      const { error } = await supabase.auth.resetPasswordForEmail(address);
       if (error && (!error.status || error.status === 429 || error.status >= 500)) {
         setProblem('Could not send a code right now. Try again later.');
       } else {
         setNotice(true);
+        setResetEmail(address);
       }
     } catch {
       setProblem('Could not reach Tether. Try again.');
@@ -58,8 +60,8 @@ export default function ForgotPasswordScreen() {
       <Action title="I have a reset code" disabled={busy || !supabase || !isAccountEmail(email.trim())}
         onPress={() => setResetEmail(email.trim())} />
       </>}
-      {resetEmail && <ResetPasswordForm key={resetEmail} email={resetEmail} onRestart={() => { setResetEmail(''); setNotice(false); }} />}
       {notice && <Text accessibilityRole="alert" style={{ color: colors.text }}>If an account exists for that email, you’ll receive a reset code.</Text>}
+      {resetEmail && <ResetPasswordForm key={resetEmail} email={resetEmail} onRestart={() => { setResetEmail(''); setNotice(false); }} />}
       {problem ? <Problem message={problem} /> : null}
     </AccountPage>
   );
