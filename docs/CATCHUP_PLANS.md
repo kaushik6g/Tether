@@ -7,4 +7,6 @@
 
 The proposal form offers Today, Tomorrow, and common durations. Review the exact local start time before sending. Plan details show both start and end times. Under **Upcoming plans**, choose **Show recent plans** to review up to 25 past or cancelled plans.
 
+**Catch-ups** has open and archived views. Search by your friend’s name, and use the dates shown to find earlier conversations. Archived catch-ups are ordered by when they closed. Within a long chat, **Load older replies** moves you toward the beginning and **Jump to reply** returns to the composer.
+
 Apply the planning migrations in `supabase/migrations` before deploying this version. The app still supports agreeing in chat and using **Mark plan as made** when both friends prefer to arrange the details themselves.
