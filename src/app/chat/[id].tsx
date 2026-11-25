@@ -1,7 +1,7 @@
 import { randomUUID } from 'expo-crypto';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useCallback, useRef, useState, type ComponentRef } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
@@ -30,6 +30,7 @@ export default function ChatScreen() {
 function Chat({ id }: { id: string }) {
   const colors = useAccountColors();
   const userId = useSession().session?.user.id;
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
   const [draft, setDraft] = useState('');
   const submitting = useRef(false);
   const attempt = useRef<{ body: string; requestId: string } | undefined>(undefined);
@@ -95,7 +96,7 @@ function Chat({ id }: { id: string }) {
 
   const match = data?.match;
   return (
-    <AccountPage>
+    <AccountPage scrollRef={scroll}>
       <Link href="/matches" replace style={[accountStyles.link, { color: colors.secondary }]}>Catch-ups</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>
         {match?.display_name ?? 'Catch-up'}
@@ -104,6 +105,9 @@ function Chat({ id }: { id: string }) {
       {data && !match && <Problem message="This conversation is unavailable." />}
       {match && <>
         <ChatPlan matchId={id} plans={data.plans} history={data.history} userId={userId} closed={!!match.closed_at} reload={reload} />
+        {!match.closed_at && !!timeline?.messages.length && (
+          <Action title="Jump to reply" onPress={() => scroll.current?.scrollToEnd({ animated: false })} />
+        )}
         {timeline?.hasMore && (
           <Action title={olderBusy ? 'Loading older replies' : 'Load older replies'}
             disabled={olderBusy} onPress={loadOlder} />

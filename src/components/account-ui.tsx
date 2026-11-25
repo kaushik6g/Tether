@@ -1,6 +1,6 @@
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { PropsWithChildren } from 'react';
+import type { ComponentRef, PropsWithChildren, Ref } from 'react';
 
 import { useAppearance } from '@/components/appearance';
 
@@ -18,12 +18,12 @@ export function useAccountColors() {
   return useAppearance().dark ? dark : light;
 }
 
-export function AccountPage({ children }: PropsWithChildren) {
+export function AccountPage({ children, scrollRef }: PropsWithChildren<{ scrollRef?: Ref<ComponentRef<typeof ScrollView>> }>) {
   const colors = useAccountColors();
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.column}>{children}</View>
         </ScrollView>
       </KeyboardAvoidingView>
