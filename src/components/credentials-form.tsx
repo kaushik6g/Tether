@@ -51,6 +51,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         else if (!data.session) {
           setConfirmationEmail(address);
           setPassword('');
+          setShowPassword(false);
         }
       } else {
         const { error: failure } = await supabase.auth.signInWithPassword(credentials);
