@@ -17,6 +17,7 @@ function ManageFriend({ id }: { id: string }) {
   const colors = useAccountColors();
   const router = useRouter();
   const saving = useRef(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [friend, setFriend] = useState<Friend | null>();
   const [choice, setChoice] = useState<Choice>();
   const [busy, setBusy] = useState(false);
@@ -27,10 +28,10 @@ function ManageFriend({ id }: { id: string }) {
     void listCircle().then((members) => {
       if (active) setFriend(members.find((member) => member.friend_id === id) ?? null);
     }).catch(() => {
-      if (active) setError('Could not load this friend. Reopen the page to try again.');
+      if (active) setError('Could not load this friend.');
     });
     return () => { active = false; };
-  }, [id]);
+  }, [id, loadAttempt]);
 
   async function confirm() {
     if (!friend || !choice || saving.current) return;
@@ -75,6 +76,10 @@ function ManageFriend({ id }: { id: string }) {
         </>
       )}
       {error ? <Problem message={error} /> : null}
+      {friend === undefined && error && <Action title="Retry loading friend" onPress={() => {
+        setError('');
+        setLoadAttempt((attempt) => attempt + 1);
+      }} />}
     </AccountPage>
   );
 }
