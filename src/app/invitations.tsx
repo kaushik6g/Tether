@@ -24,6 +24,7 @@ export default function InvitationsScreen() {
   const [status, setStatus] = useState('');
   const reload = useRef<() => void>(() => {});
   const saving = useRef(false);
+  const mutation = useRef(0);
   const link = selected ? inviteLink(selected) : null;
 
   useFocusEffect(useCallback(() => {
@@ -31,11 +32,12 @@ export default function InvitationsScreen() {
     let active = true;
     function load() {
       const current = ++sequence;
+      const revision = mutation.current;
       if (userId) void profileName(userId).then((name) => {
         if (active && current === sequence) setProfile({ userId, named: !!name });
       }).catch(() => {});
       void listActiveInvites().then((items) => {
-        if (!active || current !== sequence) return;
+        if (!active || current !== sequence || revision !== mutation.current) return;
         setInvites(items);
         setListError(false);
         setSelected((token) => items.some((item) => item.token === token) ? token : '');
@@ -51,6 +53,7 @@ export default function InvitationsScreen() {
   async function change(action: 'create' | 'revoke') {
     if (saving.current || (action === 'revoke' && !selected)) return;
     saving.current = true;
+    mutation.current++;
     setBusy(true);
     setError('');
     setStatus('');
@@ -63,10 +66,10 @@ export default function InvitationsScreen() {
         setConfirmRevoke('');
         setStatus(revoked ? 'Invitation revoked.' : 'This invitation is no longer active.');
       }
-      reload.current();
     } catch (failure) {
       setError(errorMessage(failure, 'Could not update the invitation.'));
     } finally {
+      reload.current();
       setBusy(false);
       saving.current = false;
     }
