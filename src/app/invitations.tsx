@@ -105,6 +105,8 @@ export default function InvitationsScreen() {
   function open() {
     const value = sharedInviteToken(input);
     if (!value) { setError('Enter one Tether invitation link, code, or share message.'); return; }
+    setError('');
+    setInput('');
     router.push({ pathname: '/invite/[token]', params: { token: value } });
   }
 
@@ -146,8 +148,10 @@ export default function InvitationsScreen() {
           )}
         </>
       ) : null}
-      <Field accessibilityLabel="Invitation link or code" placeholder="Invitation link or code"
-        value={input} onChangeText={setInput} autoCapitalize="none" autoCorrect={false} />
+      <Text accessibilityRole="header" style={[accountStyles.copy, { color: colors.text }]}>Received an invitation?</Text>
+      <Field accessibilityLabel="Invitation link, code, or message" placeholder="Paste your invitation"
+        value={input} onChangeText={setInput} autoCapitalize="none" autoCorrect={false}
+        returnKeyType="go" onSubmitEditing={open} />
       <Action title="Open invitation" onPress={open} disabled={!input.trim()} />
       {status ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>{status}</Text> : null}
       {error ? <Problem message={error} /> : null}
