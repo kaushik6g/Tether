@@ -22,6 +22,8 @@ function Invitation({ token }: { token: string | null }) {
   const previewAgain = useRef(() => {});
   const [previewFailed, setPreviewFailed] = useState(false);
   const [inviter, setInviter] = useState<string | null | undefined>();
+  const checkNameAgain = useRef(() => {});
+  const [nameFailed, setNameFailed] = useState(false);
   const [profile, setProfile] = useState<{ userId: string; named: boolean }>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -47,17 +49,23 @@ function Invitation({ token }: { token: string | null }) {
 
   useFocusEffect(useCallback(() => {
     if (!userId || !token) return;
-    let active = true;
-    void profileName(userId).then((name) => {
-      if (active) setProfile({ userId, named: !!name });
-    }).catch(() => {
-      if (active) setError('Could not load your display name. Reopen the link to try again.');
-    });
-    return () => { active = false; };
+    let revision = 0;
+    const load = () => {
+      const current = ++revision;
+      setNameFailed(false);
+      void profileName(userId).then((name) => {
+        if (current === revision) setProfile({ userId, named: !!name });
+      }).catch(() => {
+        if (current === revision) setNameFailed(true);
+      });
+    };
+    checkNameAgain.current = load;
+    load();
+    return () => { revision++; checkNameAgain.current = () => {}; };
   }, [userId, token]));
 
   async function accept() {
-    if (!token || !named || accepting.current) return;
+    if (!token || !named || nameFailed || accepting.current) return;
     accepting.current = true;
     setError('');
     setBusy(true);
@@ -94,7 +102,7 @@ function Invitation({ token }: { token: string | null }) {
                 style={[accountStyles.link, { color: colors.text }]}>Set display name</Link>
             </>
           ) : (
-            <Action title={busy ? 'Accepting' : 'Add to my circle'} disabled={busy || !named} onPress={accept} />
+            <Action title={busy ? 'Accepting' : 'Add to my circle'} disabled={busy || !named || nameFailed} onPress={accept} />
           )
         ) : (
           <>
@@ -109,6 +117,10 @@ function Invitation({ token }: { token: string | null }) {
       {previewFailed && <>
         <Problem message="Could not load the invitation." />
         <Action title="Retry invitation" onPress={() => previewAgain.current()} />
+      </>}
+      {userId && nameFailed && <>
+        <Problem message="Could not check your display name." />
+        <Action title="Retry display-name check" onPress={() => checkNameAgain.current()} />
       </>}
       {error ? <Problem message={error} /> : null}
       <Link href={session ? '/circle' : '/'} replace style={[accountStyles.link, { color: colors.secondary }]}>Back to Tether</Link>
