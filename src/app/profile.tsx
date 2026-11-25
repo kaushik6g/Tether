@@ -15,6 +15,7 @@ export default function ProfileScreen() {
   const invite = typeof params.invite === 'string' ? inviteToken(params.invite) : null;
   const userId = useSession().session?.user.id;
   const [name, setName] = useState('');
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -26,10 +27,10 @@ export default function ProfileScreen() {
     void profileName(userId).then((value) => {
       if (active) { setName(value); setReady(true); }
     }).catch(() => {
-      if (active) setError('Could not load your profile. Reopen this screen to try again.');
+      if (active) setError('Could not load your profile.');
     });
     return () => { active = false; };
-  }, [userId]);
+  }, [userId, loadAttempt]);
 
   async function save() {
     if (!userId || !ready || saving || !name.trim()) return;
@@ -66,6 +67,10 @@ export default function ProfileScreen() {
       <Action title={saving ? 'Saving…' : 'Save name'} disabled={!ready || !name.trim() || saving} onPress={save} />
       {saved && <Text accessibilityRole="alert" style={{ color: colors.text }}>Name saved.</Text>}
       {error ? <Problem message={error} /> : null}
+      {!ready && error && <Action title="Retry loading profile" onPress={() => {
+        setError('');
+        setLoadAttempt((attempt) => attempt + 1);
+      }} />}
     </AccountPage>
   );
 }
