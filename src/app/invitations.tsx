@@ -5,7 +5,7 @@ import { Platform, Share, StyleSheet, Text, View } from 'react-native';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { createInvite, errorMessage, listActiveInvites, revokeInvite, type ActiveInvite } from '@/features/api';
-import { inviteLink, inviteToken } from '@/features/invites';
+import { inviteLink, sharedInviteToken } from '@/features/invites';
 
 export default function InvitationsScreen() {
   const colors = useAccountColors();
@@ -86,8 +86,8 @@ export default function InvitationsScreen() {
   }
 
   function open() {
-    const value = inviteToken(input);
-    if (!value) { setError('Enter a Tether invitation link or code.'); return; }
+    const value = sharedInviteToken(input);
+    if (!value) { setError('Enter one Tether invitation link, code, or share message.'); return; }
     router.push({ pathname: '/invite/[token]', params: { token: value } });
   }
 

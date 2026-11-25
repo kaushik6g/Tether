@@ -15,6 +15,15 @@ export function inviteToken(input: string): string | null {
   }
 }
 
+export function sharedInviteToken(input: string): string | null {
+  const direct = inviteToken(input);
+  if (direct) return direct;
+
+  const candidates = input.match(/(?:https?:\/\/|tether:\/\/)[^\s<>"']+|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/gi) ?? [];
+  const tokens = new Set(candidates.map((candidate) => inviteToken(candidate.replace(/[.,!?)]+$/, ''))).filter(Boolean));
+  return tokens.size === 1 ? (tokens.values().next().value ?? null) : null;
+}
+
 export function inviteLink(token: string): string | null {
   const base = process.env.EXPO_PUBLIC_INVITE_BASE_URL || globalThis.location?.origin;
   if (!base) return null;
