@@ -4,11 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
+import { isSupabaseOrigin, isSupabasePublishableKey } from '@/lib/auth-config';
+
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
 const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
 
 function configureSupabase() {
-  if (!url || !key?.startsWith('sb_publishable_')) return null;
+  if (!url || !key || !isSupabaseOrigin(url) || !isSupabasePublishableKey(key)) return null;
 
   try {
     return createClient(url, key, {
