@@ -104,7 +104,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       </View>
       {error ? <Text accessibilityRole="alert" style={{ color: colors.error }}>{error}</Text> : null}
       {notice ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>{notice}</Text> : null}
-      {!create && <Link href="/forgot-password" style={[accountStyles.link, { color: colors.text }]}>Forgot password?</Link>}
+      {!create && <Link href={{ pathname: '/forgot-password', params: invite ? { invite } : {} }} style={[accountStyles.link, { color: colors.text }]}>Forgot password?</Link>}
       {!supabase && <Text style={{ color: colors.secondary }}>Account access is unavailable.</Text>}
       <Pressable
         accessibilityRole="button"

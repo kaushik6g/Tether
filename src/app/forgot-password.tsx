@@ -1,14 +1,17 @@
-import { Link } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Text } from 'react-native';
 
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { ResetPasswordForm } from '@/components/reset-password-form';
+import { inviteToken } from '@/features/invites';
 import { supabase } from '@/lib/supabase';
 
 export default function ForgotPasswordScreen() {
   const colors = useAccountColors();
+  const { invite: candidate } = useLocalSearchParams<{ invite?: string }>();
+  const invite = typeof candidate === 'string' ? inviteToken(candidate) : null;
   const sending = useRef(false);
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
@@ -39,7 +42,7 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AccountPage>
-      <Link href="/sign-in" replace style={[accountStyles.link, { color: colors.text }]}>Back to sign in</Link>
+      <Link href={{ pathname: '/sign-in', params: invite ? { invite } : {} }} replace style={[accountStyles.link, { color: colors.text }]}>Back to sign in</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Reset your password</Text>
       <Field accessibilityLabel="Account email" placeholder="Account email" keyboardType="email-address"
         autoCapitalize="none" autoCorrect={false} editable={!busy} value={email} onChangeText={setEmail} />
