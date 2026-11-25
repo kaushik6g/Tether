@@ -8,6 +8,10 @@ import { Action, Field, Problem } from '@/components/feature-ui';
 import { listCircle, listMatches, profileName, tapFriend, type Friend } from '@/features/api';
 import { useMatchFeed } from '@/features/use-match-feed';
 
+function normalizeName(value: string) {
+  return value.toLocaleLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+}
+
 export default function CircleScreen() {
   const colors = useAccountColors();
   const router = useRouter();
@@ -64,8 +68,8 @@ export default function CircleScreen() {
     }
   }
 
-  const filter = query.trim().toLocaleLowerCase();
-  const visible = friends?.filter((friend) => friend.display_name.toLocaleLowerCase().includes(filter));
+  const filter = normalizeName(query.trim());
+  const visible = friends?.filter((friend) => normalizeName(friend.display_name).includes(filter));
 
   return (
     <AccountPage>
