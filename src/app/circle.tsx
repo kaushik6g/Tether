@@ -18,6 +18,8 @@ export default function CircleScreen() {
   const [query, setQuery] = useState('');
   const [friends, setFriends] = useState<Friend[] | null>(null);
   const [name, setName] = useState('');
+  const [circleFailed, setCircleFailed] = useState(false);
+  const [profileFailed, setProfileFailed] = useState(false);
   const [error, setError] = useState('');
   const retry = useRef(() => {});
 
@@ -27,11 +29,17 @@ export default function CircleScreen() {
     function load() {
       if (!userId) return;
       const current = ++attempt;
-      setError('');
-      void Promise.all([listCircle(), profileName(userId)]).then(([members, displayName]) => {
-        if (attempt === current) { setFriends(members); setName(displayName); }
+      setCircleFailed(false);
+      setProfileFailed(false);
+      void listCircle().then((members) => {
+        if (attempt === current) setFriends(members);
       }).catch(() => {
-        if (attempt === current) setError('Could not load your circle. Try again.');
+        if (attempt === current) setCircleFailed(true);
+      });
+      void profileName(userId).then((displayName) => {
+        if (attempt === current) setName(displayName);
+      }).catch(() => {
+        if (attempt === current) setProfileFailed(true);
       });
     }
     retry.current = load;
@@ -72,7 +80,7 @@ export default function CircleScreen() {
           You and {openMatch.display_name} want to catch up.
         </Link>
       )}
-      {friends === null && !error && <Text style={{ color: colors.secondary }}>Loading your circle…</Text>}
+      {friends === null && !circleFailed && <Text style={{ color: colors.secondary }}>Loading your circle…</Text>}
       {friends?.length === 0 && <Text style={[accountStyles.copy, { color: colors.secondary }]}>Invite a friend to start your circle.</Text>}
       {!!friends?.length && <Field accessibilityLabel="Find a friend in your circle" placeholder="Find a friend"
         value={query} onChangeText={setQuery} autoCorrect={false} />}
@@ -89,7 +97,9 @@ export default function CircleScreen() {
         </View>
       ))}
       {error ? <Problem message={error} /> : null}
-      {error && friends === null && <Action title="Try again" onPress={() => retry.current()} />}
+      {circleFailed && <Problem message="Could not refresh your circle." />}
+      {profileFailed && <Problem message="Could not load your display name." />}
+      {(circleFailed || profileFailed) && <Action title="Retry loading circle" onPress={() => retry.current()} />}
       <Link href="/settings" style={[accountStyles.link, { color: colors.text }]}>Settings</Link>
     </AccountPage>
   );
