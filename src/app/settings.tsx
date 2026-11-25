@@ -1,12 +1,39 @@
 import { Link } from 'expo-router';
+import { useRef, useState } from 'react';
 import { Text } from 'react-native';
 
+import { useSession } from '@/auth/session';
+import { Action, Problem } from '@/components/feature-ui';
+import { supabase } from '@/lib/supabase';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
-import { matchPushAvailable } from '@/features/match-push';
+import { disableMatchPush, matchPushAvailable } from '@/features/match-push';
 
 export default function SettingsScreen() {
   const colors = useAccountColors();
   const linkStyle = [accountStyles.link, { color: colors.text }];
+
+  const userId = useSession().session?.user.id;
+  const pending = useRef(false);
+  const [confirm, setConfirm] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function signOut() {
+    if (!supabase || !userId || pending.current) return;
+    pending.current = true;
+    setBusy(true);
+    setError('');
+    try {
+      await disableMatchPush(userId);
+      const { error: failure } = await supabase.auth.signOut({ scope: 'local' });
+      if (failure) throw failure;
+    } catch {
+      setError('Could not sign out. Check your connection and try again.');
+    } finally {
+      pending.current = false;
+      setBusy(false);
+    }
+  }
 
   return (
     <AccountPage>
@@ -15,6 +42,14 @@ export default function SettingsScreen() {
       <Link href="/profile" style={linkStyle}>Display name</Link>
       <Link href="/privacy" style={linkStyle}>Privacy</Link>
       {matchPushAvailable && <Link href="/notifications" style={linkStyle}>Match notifications</Link>}
+      {confirm ? (
+        <>
+          <Text style={{ color: colors.secondary }}>Sign out of Tether on this device?</Text>
+          <Action title={busy ? 'Signing out' : 'Confirm sign-out'} disabled={busy} onPress={signOut} />
+          <Action title="Stay signed in" disabled={busy} onPress={() => { setConfirm(false); setError(''); }} />
+        </>
+      ) : <Action title="Sign out" onPress={() => setConfirm(true)} />}
+      {error ? <Problem message={error} /> : null}
     </AccountPage>
   );
 }

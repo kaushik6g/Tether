@@ -7,8 +7,6 @@ import { AccountPage, accountStyles, useAccountColors } from '@/components/accou
 import { Action, Field, Problem } from '@/components/feature-ui';
 import { listCircle, listMatches, profileName, tapFriend, type Friend } from '@/features/api';
 import { useMatchFeed } from '@/features/use-match-feed';
-import { disableMatchPush } from '@/features/match-push';
-import { supabase } from '@/lib/supabase';
 
 export default function CircleScreen() {
   const colors = useAccountColors();
@@ -22,7 +20,6 @@ export default function CircleScreen() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const retry = useRef(() => {});
-  const [signingOut, setSigningOut] = useState(false);
 
   useFocusEffect(useCallback(() => {
     if (!userId) return;
@@ -53,20 +50,6 @@ export default function CircleScreen() {
       setError('Could not save your tap. Try again.');
     } finally {
       pendingTaps.current.delete(friendId);
-    }
-  }
-
-  async function signOut() {
-    if (!supabase || signingOut) return;
-    setSigningOut(true);
-    try {
-      if (userId) await disableMatchPush(userId);
-      const { error: failure } = await supabase.auth.signOut({ scope: 'local' });
-      if (failure) setError('Could not sign out. Try again.');
-    } catch {
-      setError('Could not sign out. Try again.');
-    } finally {
-      setSigningOut(false);
     }
   }
 
@@ -108,7 +91,6 @@ export default function CircleScreen() {
       {error ? <Problem message={error} /> : null}
       {error && friends === null && <Action title="Try again" onPress={() => retry.current()} />}
       <Link href="/settings" style={[accountStyles.link, { color: colors.text }]}>Settings</Link>
-      <Action title={signingOut ? 'Signing out…' : 'Sign out'} disabled={signingOut} onPress={signOut} />
     </AccountPage>
   );
 }
