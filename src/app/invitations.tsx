@@ -23,6 +23,7 @@ export default function InvitationsScreen() {
   const [confirmRevoke, setConfirmRevoke] = useState('');
   const [selected, setSelected] = useState('');
   const [busy, setBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [listError, setListError] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
@@ -40,6 +41,7 @@ export default function InvitationsScreen() {
     function load() {
       const current = ++sequence;
       const revision = mutation.current;
+      setRefreshing(true);
       if (userId) void profileName(userId).then((name) => {
         if (active && current === sequence) setProfile({ userId, named: !!name });
       }).catch(() => {});
@@ -49,7 +51,9 @@ export default function InvitationsScreen() {
         setListError(false);
         setSelected((token) => items.some((item) => item.token === token) ? token : '');
       }).catch(() => {
-        if (active && current === sequence) setListError(true);
+        if (active && current === sequence && revision === mutation.current) setListError(true);
+      }).finally(() => {
+        if (active && current === sequence) setRefreshing(false);
       });
     }
     reload.current = load;
@@ -147,10 +151,9 @@ export default function InvitationsScreen() {
       <Action title="Open invitation" onPress={open} disabled={!input.trim()} />
       {status ? <Text accessibilityRole="alert" style={{ color: colors.secondary }}>{status}</Text> : null}
       {error ? <Problem message={error} /> : null}
-      {listError && <>
-        <Problem message="Could not load your invitations." />
-        <Action title="Reload invitations" onPress={() => reload.current()} />
-      </>}
+      {listError && <Problem message="Could not load your invitations." />}
+      <Action title={refreshing ? 'Refreshing invitations' : 'Refresh invitations'}
+        disabled={refreshing || busy} onPress={() => reload.current()} />
     </AccountPage>
   );
 }
