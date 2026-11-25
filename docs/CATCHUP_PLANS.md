@@ -5,4 +5,6 @@
 - Accepting adds the plan to **Catch-ups → Upcoming plans** and closes the chat to new replies. Either person can cancel a confirmed upcoming plan from the chat. To make another plan after closing or cancelling, start a new catch-up.
 - On mobile, **Add to calendar** opens the device's event editor in a build that includes Expo Calendar. On web, **Download calendar file** creates an iCalendar file. Calendar copies are managed in the calendar and do not update when the Tether plan is cancelled.
 
+The proposal form offers Today, Tomorrow, and common durations. Review the exact local start time before sending. Plan details show both start and end times. Under **Upcoming plans**, choose **Show recent plans** to review up to 25 past or cancelled plans.
+
 Apply the planning migrations in `supabase/migrations` before deploying this version. The app still supports agreeing in chat and using **Mark plan as made** when both friends prefer to arrange the details themselves.
