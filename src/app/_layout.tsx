@@ -4,14 +4,16 @@ import { ActivityIndicator } from 'react-native';
 
 import { SessionProvider, useSession } from '@/auth/session';
 import { AccountPage, useAccountColors } from '@/components/account-ui';
+import { AppearanceProvider, useAppearance } from '@/components/appearance';
 import { InviteAfterAuth } from '@/components/invite-after-auth';
 import { MatchNotificationListener } from '@/components/match-notification-listener';
 
 export default function RootLayout() {
   return (
     <SessionProvider>
-      <StatusBar style="auto" />
-      <AccountRoutes />
+      <AppearanceProvider>
+        <AccountRoutes />
+      </AppearanceProvider>
     </SessionProvider>
   );
 }
@@ -19,6 +21,7 @@ export default function RootLayout() {
 function AccountRoutes() {
   const { ready, session } = useSession();
   const colors = useAccountColors();
+  const { dark } = useAppearance();
 
   if (!ready) {
     return (
@@ -30,6 +33,7 @@ function AccountRoutes() {
 
   return (
     <>
+      <StatusBar style={dark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
         <Stack.Protected guard={!session}>
           <Stack.Screen name="index" />

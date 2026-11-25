@@ -1,6 +1,8 @@
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { PropsWithChildren } from 'react';
+
+import { useAppearance } from '@/components/appearance';
 
 const light = {
   background: '#f5f4eb', text: '#233127', secondary: '#4b5c4e', border: '#7b8a7e',
@@ -13,7 +15,7 @@ const dark = {
 };
 
 export function useAccountColors() {
-  return useColorScheme() === 'dark' ? dark : light;
+  return useAppearance().dark ? dark : light;
 }
 
 export function AccountPage({ children }: PropsWithChildren) {
