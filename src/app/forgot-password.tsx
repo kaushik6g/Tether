@@ -55,7 +55,8 @@ export default function ForgotPasswordScreen() {
       <AccountUnavailable />
       {!resetEmail && <>
       <Field accessibilityLabel="Account email" placeholder="Account email" keyboardType="email-address"
-        autoCapitalize="none" autoCorrect={false} editable={!busy} value={email} onChangeText={setEmail} />
+        autoCapitalize="none" autoComplete="email" autoCorrect={false} editable={!busy} value={email}
+        onChangeText={setEmail} returnKeyType="send" onSubmitEditing={request} />
       <Action title={busy ? 'Requesting code' : 'Email a reset code'} disabled={!supabase || busy || !email.trim()} onPress={request} />
       <Action title="I have a reset code" disabled={busy || !supabase || !isAccountEmail(email.trim())}
         onPress={() => setResetEmail(email.trim())} />
