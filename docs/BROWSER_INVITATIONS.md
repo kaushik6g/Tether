@@ -9,3 +9,5 @@ Tether's web build serves both the app and public invitation previews. The Verce
 5. Use the production HTTPS origin for `EXPO_PUBLIC_INVITE_BASE_URL` in native builds. The web app uses the origin it is serving from when this variable is empty.
 
 A guest can preview a friend's invitation without installing Tether. The app remembers the invitation on the same browser or device while they confirm their account and sign in. They still choose whether to accept. The **Open in the Tether app** link uses the scheme registered by the native build.
+
+In **Invitations**, senders can see the expiration time for each unused invitation and refresh the list before sharing. On mobile, review the message first, then use **Share invitation**. Revoking an unused invitation invalidates its link and code. A recipient can paste a full share message, a link, or a code into **Received an invitation?**.
