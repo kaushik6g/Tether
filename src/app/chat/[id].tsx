@@ -114,6 +114,7 @@ function Chat({ id, fromArchive }: { id: string; fromArchive: boolean }) {
           <Action title={olderBusy ? 'Loading older replies' : 'Load older replies'}
             disabled={olderBusy} onPress={loadOlder} />
         )}
+        {timeline && !timeline.hasMore && <Text style={{ color: colors.secondary }}>Beginning of conversation</Text>}
         {olderError ? <Problem message={olderError} /> : null}
         {timeline?.messages.map((message) => {
           const sender = !message.sender_id ? 'Tether' : message.sender_id === userId ? 'You' : match.display_name;
