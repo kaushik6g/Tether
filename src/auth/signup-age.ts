@@ -15,10 +15,10 @@ export function signupAgeProblem(dateOfBirth: string, today = new Date()): strin
     return invalid;
   }
 
-  const currentMonth = today.getMonth() + 1;
-  const currentDay = today.getDate();
+  const currentMonth = today.getUTCMonth() + 1;
+  const currentDay = today.getUTCDate();
   const birthdayPassed = currentMonth > month || (currentMonth === month && currentDay >= day);
-  const age = today.getFullYear() - year - (birthdayPassed ? 0 : 1);
+  const age = today.getUTCFullYear() - year - (birthdayPassed ? 0 : 1);
   if (age < 0) return 'Enter a date of birth in the past.';
   return age < minimumSignupAge ? signupAgeMessage : null;
 }

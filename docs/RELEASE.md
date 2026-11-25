@@ -18,7 +18,7 @@ Check that the target Supabase project has all migrations in `supabase/migration
 
 Set the Supabase project URL and publishable key in Vercel and deploy over HTTPS. Set the Supabase Auth Site URL to the deployed origin. That origin also serves the browser invitation pages.
 
-For the signup age check, apply `20261125002200_signup_age_attestation.sql`, then enable **Authentication → Hooks → Before User Created** and select `public.require_tether_signup_age`. Enable it after publishing the updated signup form. The app checks the entered date on-device and submits a self-declared 18+ confirmation. Existing accounts can still sign in.
+For the signup age check, apply `20261125002200_signup_age_attestation.sql` and `20261125002300_private_signup_birth_dates.sql` before enabling the updated signup flow. In **Authentication → Hooks → Before User Created**, enable the hook and select `public.require_tether_signup_age`. Coordinate the migration with the updated app release if this hook is already enabled. The app and hook check the self-reported date against an 18-year minimum using the UTC calendar date. The signup trigger saves the date in `tether_private.account_birth_dates` and removes it from Auth metadata. Account deletion removes the private row. Existing accounts can sign in without supplying a date.
 
 Install the included recovery email template under **Authentication → Email Templates → Reset password** before enabling password recovery. The recovery form expects a code from that email.
 

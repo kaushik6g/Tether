@@ -14,7 +14,7 @@ export function signInProblem(error: AuthError) {
 }
 
 export function signUpProblem(error: AuthError) {
-  if (error.status === 403 && error.message.startsWith('Confirm that you are at least 18')) {
+  if (error.status === 403 && error.message === 'Enter a valid date of birth and confirm you are at least 18 to create an account.') {
     return error.message;
   }
   switch (error.code) {

@@ -55,12 +55,20 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     requestInFlight.current = true;
     setSubmitting(true);
     try {
+      if (create) {
+        // Only send a birth date once the server can move it into private storage.
+        const { data: ready, error: setupError } = await supabase.rpc('tether_birth_date_signup_ready');
+        if (setupError || ready !== true) {
+          setError('Account creation is temporarily unavailable. Try again later.');
+          return;
+        }
+      }
       if (invite) await rememberInvite(invite, address);
       const credentials = { email: address, password };
       if (create) {
         const { data, error: failure } = await supabase.auth.signUp({
           ...credentials,
-          options: { data: { tether_age_eligible: true } },
+          options: { data: { tether_date_of_birth: dateOfBirth.trim() } },
         });
         if (failure) setError(signUpProblem(failure));
         else if (!data.session) {
@@ -145,7 +153,7 @@ export function CredentialsForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
             value={dateOfBirth}
           />
           <Text style={{ color: colors.secondary }}>
-            You must be {minimumSignupAge} or older. Tether does not save your date of birth.
+            You must be {minimumSignupAge} or older. Tether saves your date of birth privately to check your age.
           </Text>
         </View>
       )}
