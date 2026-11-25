@@ -15,10 +15,9 @@ Use the Expo development server to open the app on a device, Android emulator, i
 
 Run these checks before opening a pull request.
 
-`powershell
-npm run lint
-npm run typecheck
-`
+```powershell
+npm run check
+```
 
 ## Current stage
 
