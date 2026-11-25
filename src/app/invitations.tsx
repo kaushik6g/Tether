@@ -12,6 +12,7 @@ export default function InvitationsScreen() {
   const router = useRouter();
   const [input, setInput] = useState('');
   const [invites, setInvites] = useState<ActiveInvite[]>();
+  const [confirmRevoke, setConfirmRevoke] = useState('');
   const [selected, setSelected] = useState('');
   const [busy, setBusy] = useState(false);
   const [listError, setListError] = useState(false);
@@ -52,6 +53,7 @@ export default function InvitationsScreen() {
       } else {
         const revoked = await revokeInvite(selected);
         setSelected('');
+        setConfirmRevoke('');
         setStatus(revoked ? 'Invitation revoked.' : 'This invitation is no longer active.');
       }
       reload.current();
@@ -101,7 +103,7 @@ export default function InvitationsScreen() {
             Expires {new Date(invite.expires_at).toLocaleDateString()}
           </Text>
           <Action title={'View invitation ending in ' + invite.token.slice(-4)}
-            disabled={busy || selected === invite.token} onPress={() => setSelected(invite.token)} />
+            disabled={busy || selected === invite.token} onPress={() => { setSelected(invite.token); setConfirmRevoke(''); }} />
         </View>
       ))}
       {selected ? (
@@ -109,7 +111,15 @@ export default function InvitationsScreen() {
           <Text selectable accessibilityLabel={link ? 'Invitation link' : 'Invitation code'}
             style={[accountStyles.copy, { color: colors.text }]}>{link ?? selected}</Text>
           <Action title={Platform.OS === 'web' ? 'Copy invitation' : 'Share invitation'} onPress={share} />
-          <Action title="Revoke invitation" disabled={busy} onPress={() => void change('revoke')} />
+          {confirmRevoke === selected ? (
+            <>
+              <Text style={{ color: colors.secondary }}>After revoking this invitation, your friend will need a new link.</Text>
+              <Action title="Confirm revocation" disabled={busy} onPress={() => void change('revoke')} />
+              <Action title="Keep invitation" disabled={busy} onPress={() => setConfirmRevoke('')} />
+            </>
+          ) : (
+            <Action title="Revoke invitation" disabled={busy} onPress={() => setConfirmRevoke(selected)} />
+          )}
         </>
       ) : null}
       <Field accessibilityLabel="Invitation link or code" placeholder="Invitation link or code"
