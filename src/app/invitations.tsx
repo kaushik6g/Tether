@@ -2,14 +2,18 @@ import { Link, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Platform, Share, StyleSheet, Text, View } from 'react-native';
 
+import { useSession } from '@/auth/session';
 import { AccountPage, accountStyles, useAccountColors } from '@/components/account-ui';
 import { Action, Field, Problem } from '@/components/feature-ui';
-import { createInvite, errorMessage, listActiveInvites, revokeInvite, type ActiveInvite } from '@/features/api';
+import { createInvite, errorMessage, listActiveInvites, profileName, revokeInvite, type ActiveInvite } from '@/features/api';
 import { inviteLink, sharedInviteToken } from '@/features/invites';
 
 export default function InvitationsScreen() {
   const colors = useAccountColors();
   const router = useRouter();
+  const userId = useSession().session?.user.id;
+  const [profile, setProfile] = useState<{ userId: string; named: boolean }>();
+  const needsName = profile?.userId === userId && profile?.named === false;
   const [input, setInput] = useState('');
   const [invites, setInvites] = useState<ActiveInvite[]>();
   const [confirmRevoke, setConfirmRevoke] = useState('');
@@ -27,6 +31,9 @@ export default function InvitationsScreen() {
     let active = true;
     function load() {
       const current = ++sequence;
+      if (userId) void profileName(userId).then((name) => {
+        if (active && current === sequence) setProfile({ userId, named: !!name });
+      }).catch(() => {});
       void listActiveInvites().then((items) => {
         if (!active || current !== sequence) return;
         setInvites(items);
@@ -39,7 +46,7 @@ export default function InvitationsScreen() {
     reload.current = load;
     load();
     return () => { active = false; reload.current = () => {}; };
-  }, []));
+  }, [userId]));
 
   async function change(action: 'create' | 'revoke') {
     if (saving.current || (action === 'revoke' && !selected)) return;
@@ -96,7 +103,10 @@ export default function InvitationsScreen() {
       <Link href="/circle" replace style={[accountStyles.link, { color: colors.secondary }]}>Your circle</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Invitations</Text>
       <Text style={[accountStyles.copy, { color: colors.secondary }]}>Share each invitation with one friend. It expires after seven days.</Text>
-      <Action title="Create invitation" disabled={busy} onPress={() => void change('create')} />
+      {needsName ? (
+        <Link href={{ pathname: '/profile', params: { from: 'invitations' } }}
+          style={[accountStyles.link, { color: colors.text }]}>Set your display name to create an invitation</Link>
+      ) : <Action title="Create invitation" disabled={busy} onPress={() => void change('create')} />}
       <Text accessibilityRole="header" style={[accountStyles.copy, { color: colors.text }]}>Active invitations</Text>
       {invites === undefined && !listError && <Text style={{ color: colors.secondary }}>Loading invitations…</Text>}
       {invites?.length === 0 && !selected && <Text style={{ color: colors.secondary }}>You have no unused invitations.</Text>}

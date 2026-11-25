@@ -13,7 +13,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ invite?: string; from?: string }>();
   const invite = typeof params.invite === 'string' ? inviteToken(params.invite) : null;
-  const fromSettings = params.from === 'settings';
+  const back = params.from === 'settings' ? '/settings' : params.from === 'invitations' ? '/invitations' : '/circle';
+  const backLabel = back === '/settings' ? 'Settings' : back === '/invitations' ? 'Invitations' : 'Your circle';
   const userId = useSession().session?.user.id;
   const writing = useRef(false);
   const [originalName, setOriginalName] = useState('');
@@ -47,6 +48,10 @@ export default function ProfileScreen() {
         router.replace({ pathname: '/invite/[token]', params: { token: invite } });
         return;
       }
+      if (back === '/invitations') {
+        router.replace(back);
+        return;
+      }
       setName(nextName);
       setOriginalName(nextName);
       setSaved(true);
@@ -61,11 +66,11 @@ export default function ProfileScreen() {
   return (
     <AccountPage>
       <Link
-        href={invite ? { pathname: '/invite/[token]', params: { token: invite } } : fromSettings ? '/settings' : '/circle'}
+        href={invite ? { pathname: '/invite/[token]', params: { token: invite } } : back}
         replace
         style={[accountStyles.link, { color: colors.secondary }]}
       >
-        {invite ? 'Back to invitation' : fromSettings ? 'Settings' : 'Your circle'}
+        {invite ? 'Back to invitation' : backLabel}
       </Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Your name</Text>
       <Text style={[accountStyles.copy, { color: colors.secondary }]}>Friends see this name on your invites and in their circles.</Text>
