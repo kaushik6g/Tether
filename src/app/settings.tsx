@@ -12,19 +12,19 @@ export default function SettingsScreen() {
   const colors = useAccountColors();
   const linkStyle = [accountStyles.link, { color: colors.text }];
 
-  const userId = useSession().session?.user.id;
+  const user = useSession().session?.user;
   const pending = useRef(false);
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   async function signOut() {
-    if (!supabase || !userId || pending.current) return;
+    if (!supabase || !user || pending.current) return;
     pending.current = true;
     setBusy(true);
     setError('');
     try {
-      await disableMatchPush(userId);
+      await disableMatchPush(user.id);
       const { error: failure } = await supabase.auth.signOut({ scope: 'local' });
       if (failure) throw failure;
     } catch {
@@ -39,6 +39,7 @@ export default function SettingsScreen() {
     <AccountPage>
       <Link href="/circle" replace style={linkStyle}>Your circle</Link>
       <Text accessibilityRole="header" style={[accountStyles.title, { color: colors.text }]}>Settings</Text>
+      {user?.email && <Text selectable style={[accountStyles.copy, { color: colors.secondary }]}>Signed in as {user.email}</Text>}
       <Link href="/profile" style={linkStyle}>Display name</Link>
       <Link href="/privacy" style={linkStyle}>Privacy</Link>
       {matchPushAvailable && <Link href="/notifications" style={linkStyle}>Match notifications</Link>}
